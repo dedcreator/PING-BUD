@@ -1,0 +1,7 @@
+# Core Web Framework
+Django>=5.0,<6.0
+djangorestframework>=3.14.0
+django-cors-headers>=4.3.0
+
+# HTTP & Probe Client
+requests>=2.31.0

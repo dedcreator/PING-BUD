@@ -39,6 +39,10 @@ backend/db.sqlite3-shm
 *.swp
 *.swo
 
+# Staticfiles
+staticfiles/
+backend/staticfiles/
+
 # Logs
 *.log
 npm-debug.log*

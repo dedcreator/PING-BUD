@@ -74,10 +74,14 @@ DATABASES = {
 @receiver(connection_created)
 def configure_sqlite_wal(sender, connection, **kwargs):
     if connection.vendor == 'sqlite':
-        with connection.cursor() as cursor:
-            cursor.execute('PRAGMA journal_mode=WAL;')
-            cursor.execute('PRAGMA synchronous=NORMAL;')
-            cursor.execute('PRAGMA cache_size=-64000;')
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute('PRAGMA journal_mode=WAL;')
+                cursor.execute('PRAGMA synchronous=NORMAL;')
+                cursor.execute('PRAGMA cache_size=-64000;')
+        except Exception:
+            # Fallback gracefully if running on PythonAnywhere NFS or systems without WAL support
+            pass
 
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator', 'OPTIONS': {'min_length': 6}},
@@ -108,7 +112,13 @@ CSRF_TRUSTED_ORIGINS = [
     'http://127.0.0.1:3000',
     'http://localhost:8000',
     'http://127.0.0.1:8000',
+    'https://*.pythonanywhere.com',
+    'http://*.pythonanywhere.com',
 ]
+
+extra_csrf = os.environ.get('CSRF_TRUSTED_ORIGINS', '')
+if extra_csrf:
+    CSRF_TRUSTED_ORIGINS.extend([origin.strip() for origin in extra_csrf.split(',') if origin.strip()])
 
 REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': [
