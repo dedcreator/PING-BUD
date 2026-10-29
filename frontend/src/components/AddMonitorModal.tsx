@@ -22,6 +22,8 @@ import {
 } from 'lucide-react';
 import { Monitor, MonitorType, UserRole } from '../types';
 import { testTargetPreview } from '../lib/api';
+import ThreeDProtocolHologram from './ThreeDProtocolHologram';
+import ThreeDDeployingOverlay from './ThreeDDeployingOverlay';
 
 interface AddMonitorModalProps {
   isOpen: boolean;
@@ -243,6 +245,15 @@ export default function AddMonitorModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/65 backdrop-blur-sm overflow-y-auto">
       <div className="relative w-full max-w-xl rounded-2xl bg-white dark:bg-[#111A2E] border border-slate-200 dark:border-slate-800 shadow-2xl p-6 my-8 text-slate-900 dark:text-slate-100 transition-all max-h-[92vh] overflow-y-auto">
+        {/* 3D Synthetic Deployment Animation Overlay */}
+        {saving && (
+          <ThreeDDeployingOverlay
+            monitorName={name.trim() || target.trim()}
+            target={target.trim()}
+            regions={regions}
+          />
+        )}
+
         {/* Header */}
         <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
           <div className="flex items-center gap-2.5">
@@ -262,6 +273,16 @@ export default function AddMonitorModal({
           >
             <X className="w-5 h-5" />
           </button>
+        </div>
+
+        {/* Interactive 3D Protocol Hologram & Scanner */}
+        <div className="mt-4">
+          <ThreeDProtocolHologram
+            type={monitorType}
+            isTesting={testing}
+            testResult={testResult}
+            className="h-28 w-full border border-slate-200/80 dark:border-slate-800/80 bg-slate-900/[0.03] dark:bg-slate-950/40 shadow-inner"
+          />
         </div>
 
         {errorMsg && (

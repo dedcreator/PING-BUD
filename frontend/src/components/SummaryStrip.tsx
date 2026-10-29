@@ -11,6 +11,7 @@ import {
   TrendingUp,
 } from 'lucide-react';
 import { StatusSummary } from '../types';
+import ThreeDStatusOrb from './ThreeDStatusOrb';
 
 interface SummaryStripProps {
   summary: StatusSummary;
@@ -32,14 +33,20 @@ export default function SummaryStrip({
       {/* 1. Overall Health Status */}
       <div
         onClick={isAllGood ? onFilterAll : onFilterDown}
-        className={`p-4 rounded-xl border transition-all cursor-pointer ${
+        className={`p-4 rounded-xl border transition-all cursor-pointer card-3d-tilt ${
           isAllGood
             ? 'bg-emerald-500/5 border-emerald-500/20 hover:border-emerald-500/40 dark:bg-emerald-500/10'
             : 'bg-red-500/5 border-red-500/20 hover:border-red-500/40 dark:bg-red-500/10 shadow-sm'
         }`}
       >
         <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 font-medium mb-1">
-          <span>System Status</span>
+          <div className="flex items-center gap-2">
+            <ThreeDStatusOrb
+              status={isAllGood ? 'operational' : summary.down > 0 ? 'down' : 'degraded'}
+              size={22}
+            />
+            <span>System Status</span>
+          </div>
           {isAllGood ? (
             <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
           ) : (
@@ -63,7 +70,7 @@ export default function SummaryStrip({
       </div>
 
       {/* 2. 24h Average Uptime */}
-      <div className="p-4 rounded-xl border border-slate-200/80 dark:border-slate-800/80 backdrop-blur-xl bg-white/70 dark:bg-[#0F172A]/80 hover:border-slate-300 dark:hover:border-slate-700 transition-all">
+      <div className="p-4 rounded-xl border border-slate-200/80 dark:border-slate-800/80 backdrop-blur-xl bg-white/70 dark:bg-[#0F172A]/80 hover:border-slate-300 dark:hover:border-slate-700 transition-all card-3d-tilt">
         <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 font-medium mb-1">
           <span>24-Hour Uptime</span>
           <TrendingUp className="w-4 h-4 text-teal-600 dark:text-teal-400" />
@@ -80,7 +87,7 @@ export default function SummaryStrip({
       </div>
 
       {/* 3. Global Latency */}
-      <div className="p-4 rounded-xl border border-slate-200/80 dark:border-slate-800/80 backdrop-blur-xl bg-white/70 dark:bg-[#0F172A]/80 hover:border-slate-300 dark:hover:border-slate-700 transition-all">
+      <div className="p-4 rounded-xl border border-slate-200/80 dark:border-slate-800/80 backdrop-blur-xl bg-white/70 dark:bg-[#0F172A]/80 hover:border-slate-300 dark:hover:border-slate-700 transition-all card-3d-tilt">
         <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 font-medium mb-1">
           <span>Average Latency</span>
           <Zap className="w-4 h-4 text-amber-500" />
@@ -97,7 +104,7 @@ export default function SummaryStrip({
       </div>
 
       {/* 4. Active Monitors Breakdown */}
-      <div className="p-4 rounded-xl border border-slate-200/80 dark:border-slate-800/80 backdrop-blur-xl bg-white/70 dark:bg-[#0F172A]/80 hover:border-slate-300 dark:hover:border-slate-700 transition-all">
+      <div className="p-4 rounded-xl border border-slate-200/80 dark:border-slate-800/80 backdrop-blur-xl bg-white/70 dark:bg-[#0F172A]/80 hover:border-slate-300 dark:hover:border-slate-700 transition-all card-3d-tilt">
         <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 font-medium mb-1">
           <span>Active Monitors</span>
           <Server className="w-4 h-4 text-slate-400" />

@@ -27,6 +27,7 @@ import {
 import { Monitor, Check as CheckType, MonitorEdgeBreakdown } from '../types';
 import StatusPill from './StatusPill';
 import UptimeBar from './UptimeBar';
+import ThreeDEdgeTopology from './ThreeDEdgeTopology';
 import { fetchMonitorChecks, fetchMonitorEdgeBreakdown, getApiBase } from '../lib/api';
 
 interface MonitorDetailModalProps {
@@ -314,6 +315,15 @@ export default function MonitorDetailModal({
             <span className="text-[10px] font-mono px-2 py-0.5 rounded-full font-bold bg-teal-500/10 text-teal-600 dark:text-teal-400 border border-teal-500/20">
               {edgeData?.consensus_quorum || '4/4 Consensus Verified'}
             </span>
+          </div>
+
+          {/* Interactive 3D Multi-Region Consensus Topology */}
+          <div className="mt-3">
+            <ThreeDEdgeTopology
+              monitorName={monitor.name}
+              isChecking={checking}
+              edgeData={edgeData}
+            />
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mt-3">

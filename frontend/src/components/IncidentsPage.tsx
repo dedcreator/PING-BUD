@@ -170,7 +170,7 @@ export default function IncidentsPage({
 
       {/* SRE Operational Summary Badges */}
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-        <div className="p-4 rounded-2xl backdrop-blur-xl bg-white/70 dark:bg-[#0F172A]/80 border border-slate-200/80 dark:border-slate-800/80 shadow-sm">
+        <div className="p-4 rounded-2xl backdrop-blur-xl bg-white/70 dark:bg-[#0F172A]/80 border border-slate-200/80 dark:border-slate-800/80 shadow-sm card-3d-tilt">
           <div className="flex items-center justify-between">
             <span className="text-xs text-slate-500">Active Outages</span>
             {activeIncidents.length > 0 ? (
@@ -187,7 +187,7 @@ export default function IncidentsPage({
           </div>
         </div>
 
-        <div className="p-4 rounded-2xl backdrop-blur-xl bg-white/70 dark:bg-[#0F172A]/80 border border-slate-200/80 dark:border-slate-800/80 shadow-sm">
+        <div className="p-4 rounded-2xl backdrop-blur-xl bg-white/70 dark:bg-[#0F172A]/80 border border-slate-200/80 dark:border-slate-800/80 shadow-sm card-3d-tilt">
           <div className="flex items-center justify-between">
             <span className="text-xs text-slate-500">Total Recorded</span>
             <ShieldAlert className="w-3.5 h-3.5 text-slate-400" />
@@ -198,7 +198,7 @@ export default function IncidentsPage({
           <div className="text-[11px] text-slate-400 mt-0.5">Historical incident count</div>
         </div>
 
-        <div className="p-4 rounded-2xl backdrop-blur-xl bg-white/70 dark:bg-[#0F172A]/80 border border-slate-200/80 dark:border-slate-800/80 shadow-sm">
+        <div className="p-4 rounded-2xl backdrop-blur-xl bg-white/70 dark:bg-[#0F172A]/80 border border-slate-200/80 dark:border-slate-800/80 shadow-sm card-3d-tilt">
           <div className="flex items-center justify-between">
             <span className="text-xs text-slate-500">Mean Time to Resolve (MTTR)</span>
             <Clock className="w-3.5 h-3.5 text-teal-600" />
@@ -209,7 +209,7 @@ export default function IncidentsPage({
           <div className="text-[11px] text-slate-400 mt-0.5">Average recovery window</div>
         </div>
 
-        <div className="p-4 rounded-2xl backdrop-blur-xl bg-white/70 dark:bg-[#0F172A]/80 border border-slate-200/80 dark:border-slate-800/80 shadow-sm">
+        <div className="p-4 rounded-2xl backdrop-blur-xl bg-white/70 dark:bg-[#0F172A]/80 border border-slate-200/80 dark:border-slate-800/80 shadow-sm card-3d-tilt">
           <div className="flex items-center justify-between">
             <span className="text-xs text-slate-500">AI Root Cause Analysis</span>
             <Bot className="w-3.5 h-3.5 text-indigo-500" />

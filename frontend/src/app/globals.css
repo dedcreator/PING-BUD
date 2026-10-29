@@ -82,3 +82,64 @@ code, pre, .font-mono {
 .radar-live {
   animation: radar-pulse 2s infinite cubic-bezier(0.4, 0, 0.6, 1);
 }
+
+/* 3D Perspective & Holographic Animations */
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+.transform-style-3d {
+  transform-style: preserve-3d;
+}
+
+.backface-hidden {
+  backface-visibility: hidden;
+}
+
+/* 3D Tilt Card Interactive Sheen */
+.card-3d-tilt {
+  transition: transform 0.2s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.2s cubic-bezier(0.2, 0, 0, 1);
+  will-change: transform;
+}
+
+.card-3d-tilt:hover {
+  transform: translateY(-2px) scale(1.008);
+  box-shadow: 0 12px 28px -8px rgba(15, 23, 42, 0.08), 0 0 0 1px rgba(13, 148, 136, 0.18);
+}
+
+.dark .card-3d-tilt:hover {
+  box-shadow: 0 12px 28px -8px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(13, 148, 136, 0.35);
+}
+
+/* 3D Scanning Line for Live Probes */
+@keyframes scanline {
+  0% {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  50% {
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateY(600%);
+    opacity: 0;
+  }
+}
+
+.animate-scanline {
+  animation: scanline 3s linear infinite;
+}
+
+/* 3D Floating Bobbing Motion */
+@keyframes float-3d {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-6px) rotate(0.8deg);
+  }
+}
+
+.animate-float-3d {
+  animation: float-3d 4s ease-in-out infinite;
+}

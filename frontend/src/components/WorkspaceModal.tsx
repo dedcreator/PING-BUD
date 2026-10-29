@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { Project, ProPlan, UserRole } from '../types';
 import { createProject, deleteProject } from '../lib/api';
+import ThreeDWorkspaceCluster from './ThreeDWorkspaceCluster';
 
 interface WorkspaceModalProps {
   isOpen: boolean;
@@ -159,6 +160,15 @@ export default function WorkspaceModal({
             <span>{successMsg}</span>
           </div>
         )}
+
+        {/* 3D Multi-Tenant Workspace Cluster */}
+        <div className="mt-4">
+          <ThreeDWorkspaceCluster
+            projects={projects}
+            activeSlug={activeProjectSlug}
+            isSubmitting={isSubmitting}
+          />
+        </div>
 
         {/* Existing Workspaces List */}
         <div className="mt-4 space-y-2">

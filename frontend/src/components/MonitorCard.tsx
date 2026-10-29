@@ -78,7 +78,9 @@ export default function MonitorCard({
   return (
     <div
       onClick={() => onSelect(monitor)}
-      className={`group relative rounded-xl border p-3 sm:p-3.5 transition-all duration-150 cursor-pointer ${
+      className={`group relative rounded-xl border p-3 sm:p-3.5 transition-all duration-150 cursor-pointer card-3d-tilt ${
+        checking ? 'ring-2 ring-teal-500/50 shadow-lg shadow-teal-500/10' : ''
+      } ${
         isDown
           ? 'bg-rose-500/[0.04] dark:bg-rose-950/20 border-rose-500/40 hover:border-rose-500 shadow-sm'
           : isSuspect
@@ -86,6 +88,13 @@ export default function MonitorCard({
           : 'backdrop-blur-xl bg-white/75 dark:bg-[#0F172A]/80 border-slate-200/80 dark:border-slate-800/80 hover:border-teal-500/60 dark:hover:border-teal-500/60 shadow-sm hover:shadow'
       }`}
     >
+      {/* 3D Scanning Laser Beam when Checking */}
+      {checking && (
+        <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-xl z-10">
+          <div className="w-full h-1 bg-gradient-to-r from-transparent via-teal-400 to-transparent animate-scanline" />
+        </div>
+      )}
+
       {/* Top Header Row */}
       <div className="flex items-start justify-between gap-2.5 mb-2">
         <div className="min-w-0 flex-1">
