@@ -1,0 +1,397 @@
+'use client';
+
+import React, { useState } from 'react';
+import {
+  Activity,
+  LayoutDashboard,
+  Server,
+  Flame,
+  Bell,
+  Calendar,
+  Radio,
+  Receipt,
+  Settings,
+  Tag,
+  Globe,
+  Terminal,
+  ShieldCheck,
+  ChevronDown,
+  Layers,
+  Plus,
+  ExternalLink,
+  ChevronRight,
+  User,
+  Sliders,
+  CheckCircle2,
+  X,
+  LogOut,
+} from 'lucide-react';
+import { ProPlan, Project, UserRole } from '../types';
+
+export type NavItem =
+  | 'dashboard'
+  | 'monitors'
+  | 'incidents'
+  | 'channels'
+  | 'maintenance'
+  | 'bills'
+  | 'settings';
+
+interface SidebarProps {
+  currentView: string;
+  onNavigate: (view: NavItem) => void;
+  projects?: Project[];
+  activeProjectSlug: string;
+  onSelectProject: (slug: string) => void;
+  activeRole: UserRole;
+  onOpenAuthModal: () => void;
+  onOpenAddModal: () => void;
+  onOpenWorkspaceModal?: () => void;
+  canEdit: boolean;
+  activeIncidentsCount: number;
+  monitorsCount: number;
+  proPlan?: ProPlan | null;
+  isOpenMobile: boolean;
+  onCloseMobile: () => void;
+}
+
+export default function Sidebar({
+  currentView,
+  onNavigate,
+  projects = [],
+  activeProjectSlug,
+  onSelectProject,
+  activeRole,
+  onOpenAuthModal,
+  onOpenAddModal,
+  onOpenWorkspaceModal,
+  canEdit,
+  activeIncidentsCount,
+  monitorsCount,
+  proPlan,
+  isOpenMobile,
+  onCloseMobile,
+}: SidebarProps) {
+  const [workspaceMenuOpen, setWorkspaceMenuOpen] = useState(false);
+
+  const currentProjectName =
+    projects.find((p) => p.slug === activeProjectSlug)?.name ||
+    'Production Infrastructure';
+
+  const isOutage = activeIncidentsCount > 0;
+
+  const roleLabels: Record<UserRole, { label: string; badgeClass: string }> = {
+    owner: {
+      label: 'Workspace Owner',
+      badgeClass: 'text-amber-700 dark:text-amber-300 bg-amber-500/10 border-amber-500/20',
+    },
+    editor: {
+      label: 'DevOps Editor',
+      badgeClass: 'text-teal-700 dark:text-teal-300 bg-teal-500/10 border-teal-500/20',
+    },
+    viewer: {
+      label: 'Read-only Viewer',
+      badgeClass: 'text-slate-600 dark:text-slate-400 bg-slate-500/10 border-slate-500/20',
+    },
+  };
+
+  const navGroups = [
+    {
+      group: 'Overview',
+      items: [
+        {
+          id: 'dashboard',
+          label: 'Dashboard',
+          icon: LayoutDashboard,
+          badge: null,
+        },
+        {
+          id: 'monitors',
+          label: 'Health Monitors',
+          icon: Server,
+          badge: monitorsCount.toString(),
+        },
+        {
+          id: 'incidents',
+          label: 'Incidents & Log',
+          icon: Flame,
+          badge: isOutage ? `${activeIncidentsCount} active` : null,
+          badgeColor: isOutage ? 'bg-rose-500 text-white' : 'bg-slate-100 text-slate-600',
+        },
+      ],
+    },
+    {
+      group: 'Operations',
+      items: [
+        {
+          id: 'channels',
+          label: 'Alert Channels',
+          icon: Bell,
+          badge: null,
+        },
+        {
+          id: 'maintenance',
+          label: 'Maintenance',
+          icon: Calendar,
+          badge: null,
+        },
+      ],
+    },
+    {
+      group: 'Workspace & SaaS',
+      items: [
+        {
+          id: 'bills',
+          label: 'Billing & Invoices',
+          icon: Receipt,
+          badge: 'Bachs',
+        },
+        {
+          id: 'settings',
+          label: 'Workspace Settings',
+          icon: Settings,
+          badge: null,
+        },
+      ],
+    },
+  ];
+
+  return (
+    <>
+      {/* Mobile Backdrop */}
+      {isOpenMobile && (
+        <div
+          onClick={onCloseMobile}
+          className="fixed inset-0 z-40 bg-slate-950/60 backdrop-blur-sm lg:hidden transition-opacity"
+        />
+      )}
+
+      {/* Main Liquid Glass Sidebar */}
+      <aside
+        className={`fixed top-0 bottom-0 left-0 z-50 w-64 flex flex-col justify-between backdrop-blur-xl bg-white/80 dark:bg-[#0D1527]/90 border-r border-slate-200/80 dark:border-slate-800/80 shadow-lg lg:shadow-none transition-transform duration-200 ease-in-out ${
+          isOpenMobile ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+        }`}
+      >
+        <div className="flex flex-col flex-1 overflow-y-auto">
+          {/* Top Brand & Workspace Strip */}
+          <div className="p-4 border-b border-slate-200/80 dark:border-slate-800/80">
+            <div className="flex items-center justify-between mb-3">
+              <button
+                onClick={() => {
+                  onNavigate('dashboard');
+                  onCloseMobile();
+                }}
+                className="flex items-center gap-2.5 text-left group"
+              >
+                <div
+                  className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${
+                    isOutage
+                      ? 'bg-rose-600 text-white'
+                      : 'bg-teal-600 text-white'
+                  }`}
+                >
+                  <Activity className="w-5 h-5 stroke-[2.2]" />
+                </div>
+                <div>
+                  <div className="font-bold text-sm tracking-tight text-slate-900 dark:text-white flex items-center gap-1.5">
+                    <span>pingbud.us</span>
+                    <span className="text-[10px] font-mono uppercase px-1.5 py-0.2 rounded bg-slate-100 dark:bg-slate-800 text-teal-700 dark:text-teal-300 font-bold border border-slate-200 dark:border-slate-700">
+                      SaaS
+                    </span>
+                  </div>
+                  <div className="text-[11px] text-slate-500 dark:text-slate-400 font-mono">
+                    Zero-Overhead Monitoring
+                  </div>
+                </div>
+              </button>
+
+              <button
+                onClick={onCloseMobile}
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 lg:hidden"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Workspace / Project Selector Dropdown */}
+            <div className="relative mt-2">
+              <button
+                onClick={() => setWorkspaceMenuOpen(!workspaceMenuOpen)}
+                className="w-full flex items-center justify-between px-3 py-2 text-xs font-semibold rounded-xl bg-slate-100/70 hover:bg-slate-100 dark:bg-slate-800/60 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200/80 dark:border-slate-700/80 transition-colors"
+              >
+                <div className="flex items-center gap-2 truncate">
+                  <Layers className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400 shrink-0" />
+                  <span className="truncate">{currentProjectName}</span>
+                </div>
+                <ChevronDown className="w-3.5 h-3.5 text-slate-400 shrink-0 ml-1" />
+              </button>
+
+              {workspaceMenuOpen && (
+                <div
+                  onClick={() => setWorkspaceMenuOpen(false)}
+                  className="absolute left-0 right-0 top-full mt-1.5 rounded-xl bg-white dark:bg-[#111A2E] border border-slate-200 dark:border-slate-700 shadow-xl py-1.5 z-50 text-xs"
+                >
+                  <div className="px-3 py-1 text-[10px] font-mono uppercase tracking-wider text-slate-400">
+                    Switch Workspace
+                  </div>
+                  {projects.map((proj) => (
+                    <button
+                      key={proj.id}
+                      onClick={() => onSelectProject(proj.slug)}
+                      className={`w-full px-3 py-2 text-left flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800/60 ${
+                        activeProjectSlug === proj.slug
+                          ? 'font-bold text-teal-700 dark:text-teal-300 bg-teal-50/50 dark:bg-teal-950/30'
+                          : 'text-slate-700 dark:text-slate-200'
+                      }`}
+                    >
+                      <span className="truncate">{proj.name}</span>
+                      <span className="text-[10px] font-mono text-slate-400">
+                        {proj.monitors_count || 0}
+                      </span>
+                    </button>
+                  ))}
+
+                  <div className="pt-1 mt-1 border-t border-slate-100 dark:border-slate-800 px-1">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setWorkspaceMenuOpen(false);
+                        if (onOpenWorkspaceModal) onOpenWorkspaceModal();
+                      }}
+                      className="w-full px-2.5 py-1.5 rounded-lg text-left text-teal-600 dark:text-teal-400 hover:bg-teal-50 dark:hover:bg-teal-950/40 font-semibold flex items-center justify-between transition-colors cursor-pointer"
+                    >
+                      <span className="flex items-center gap-1.5">
+                        <Plus className="w-3.5 h-3.5" />
+                        <span>Manage / Add Workspace</span>
+                      </span>
+                      <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-600 font-bold border border-amber-500/20">
+                        PRO
+                      </span>
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Quick Action: Add Monitor */}
+            <button
+              onClick={() => {
+                if (canEdit) onOpenAddModal();
+                onCloseMobile();
+              }}
+              disabled={!canEdit}
+              className={`w-full mt-2.5 py-2 px-3 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition-all ${
+                canEdit
+                  ? 'bg-teal-600 hover:bg-teal-700 text-white shadow-sm'
+                  : 'bg-slate-200/60 dark:bg-slate-800 text-slate-400 cursor-not-allowed opacity-60'
+              }`}
+            >
+              <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
+              <span>Add Health Monitor</span>
+            </button>
+          </div>
+
+          {/* Navigation Items by Group */}
+          <nav className="p-3 space-y-5 flex-1">
+            {navGroups.map((grp) => (
+              <div key={grp.group}>
+                <div className="px-3 mb-1.5 text-[10px] font-mono uppercase tracking-wider text-slate-400 font-bold">
+                  {grp.group}
+                </div>
+                <div className="space-y-0.5">
+                  {grp.items.map((item) => {
+                    const Icon = item.icon;
+                    const isActive = currentView === item.id;
+                    return (
+                      <button
+                        key={item.id}
+                        onClick={() => {
+                          onNavigate(item.id as NavItem);
+                          onCloseMobile();
+                        }}
+                        className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-all ${
+                          isActive
+                            ? 'bg-teal-50 dark:bg-teal-950/40 text-teal-800 dark:text-teal-300 font-semibold border border-teal-200/60 dark:border-teal-800/60'
+                            : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100/70 dark:hover:bg-slate-800/50'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <Icon
+                            className={`w-4 h-4 ${
+                              isActive
+                                ? 'text-teal-600 dark:text-teal-400'
+                                : 'text-slate-400 group-hover:text-slate-600'
+                            }`}
+                          />
+                          <span>{item.label}</span>
+                        </div>
+                        {item.badge && (
+                          <span
+                            className={`text-[10px] font-mono px-2 py-0.5 rounded-full font-bold border border-slate-200 dark:border-slate-700 ${
+                              item.badgeColor ||
+                              (isActive
+                                ? 'bg-teal-100 dark:bg-teal-900/60 text-teal-700 dark:text-teal-300'
+                                : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400')
+                            }`}
+                          >
+                            {item.badge}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </nav>
+        </div>
+
+        {/* Bottom User & Role Strip */}
+        <div className="p-3 border-t border-slate-200/80 dark:border-slate-800/80 bg-slate-50/50 dark:bg-[#0B1120]/50 space-y-2">
+          {/* RBAC Role Chip Button + Log Out Button */}
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={() => {
+                onOpenAuthModal();
+                onCloseMobile();
+              }}
+              className={`flex-1 flex items-center justify-between p-2 rounded-xl text-xs font-semibold border transition-all truncate ${roleLabels[activeRole].badgeClass}`}
+              title="Click to Switch User / Role"
+            >
+              <div className="flex items-center gap-1.5 truncate">
+                <ShieldCheck className="w-3.5 h-3.5 shrink-0" />
+                <span className="truncate">{roleLabels[activeRole].label}</span>
+              </div>
+              <span className="text-[10px] uppercase font-mono font-bold opacity-70 shrink-0 ml-1">
+                RBAC
+              </span>
+            </button>
+
+            <button
+              onClick={() => {
+                if (typeof window !== 'undefined') {
+                  localStorage.removeItem('pulsewatch_token');
+                  localStorage.removeItem('pulsewatch_demo_role');
+                  window.location.href = '/';
+                }
+              }}
+              className="p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-850 hover:bg-rose-50 hover:border-rose-200 hover:text-rose-600 text-slate-500 transition-colors shrink-0"
+              title="Log Out (Sign Out)"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
+          </div>
+
+          {/* System SLA Status Indicator */}
+          <div className="flex items-center justify-between px-2 pt-1 text-xs text-slate-500">
+            <div className="flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="text-[11px] font-semibold text-slate-700 dark:text-slate-300">Probes Operational</span>
+            </div>
+            <span className="text-[10px] font-mono font-bold text-teal-600 dark:text-teal-400">99.99% SLA</span>
+          </div>
+        </div>
+      </aside>
+    </>
+  );
+}
