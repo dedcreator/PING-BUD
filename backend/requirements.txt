@@ -5,3 +5,11 @@ django-cors-headers>=4.3.0
 
 # HTTP & Probe Client
 requests>=2.31.0
+
+# Production WSGI & Static Server for Render
+gunicorn>=21.2.0
+whitenoise>=6.6.0
+
+# Optional PostgreSQL support for Render / Neon / Supabase
+dj-database-url>=2.1.0
+psycopg2-binary>=2.9.9

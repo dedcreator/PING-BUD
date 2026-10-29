@@ -32,6 +32,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -60,16 +61,33 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'pulsewatch.wsgi.application'
 
-# SQLite WAL mode: keeps deployment costs near $0 on a 1 vCPU / 512MB box
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-        'OPTIONS': {
-            'timeout': 30,
+# Database configuration: defaults to ultra-lean SQLite in WAL mode
+# Supports managed PostgreSQL (Render Postgres, Neon, Supabase) via DATABASE_URL
+database_url = os.environ.get('DATABASE_URL')
+if database_url and not database_url.startswith('sqlite'):
+    try:
+        import dj_database_url
+        DATABASES = {
+            'default': dj_database_url.config(default=database_url, conn_max_age=600)
+        }
+    except ImportError:
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.sqlite3',
+                'NAME': BASE_DIR / 'db.sqlite3',
+                'OPTIONS': {'timeout': 30}
+            }
+        }
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+            'OPTIONS': {
+                'timeout': 30,
+            }
         }
     }
-}
 
 @receiver(connection_created)
 def configure_sqlite_wal(sender, connection, **kwargs):
@@ -94,6 +112,7 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
@@ -114,6 +133,8 @@ CSRF_TRUSTED_ORIGINS = [
     'http://127.0.0.1:8000',
     'https://*.pythonanywhere.com',
     'http://*.pythonanywhere.com',
+    'https://*.onrender.com',
+    'http://*.onrender.com',
 ]
 
 extra_csrf = os.environ.get('CSRF_TRUSTED_ORIGINS', '')
