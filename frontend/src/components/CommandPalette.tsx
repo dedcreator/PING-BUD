@@ -61,7 +61,7 @@ export default function CommandPalette({
 
   const actions = [
     { id: 'add', label: 'Add New Monitor', icon: <Plus className="w-4 h-4 text-teal-600" />, run: onOpenAdd },
-    { id: 'auth', label: 'Team Authentication & Switch Tier Accounts', icon: <Shield className="w-4 h-4 text-emerald-600" />, run: onOpenAuth },
+    { id: 'auth', label: 'Workspace & Account Settings', icon: <Shield className="w-4 h-4 text-emerald-600" />, run: onOpenAuth },
     { id: 'dev', label: 'Developer API Keys & Prometheus /metrics', icon: <Key className="w-4 h-4 text-purple-600" />, run: onOpenDeveloper },
     { id: 'maint', label: 'Scheduled Maintenance Windows', icon: <Wrench className="w-4 h-4 text-teal-600" />, run: onOpenMaintenance },
     { id: 'csv', label: 'Export Incident Logs to CSV', icon: <FileDown className="w-4 h-4 text-slate-500" />, run: onExportCsv },

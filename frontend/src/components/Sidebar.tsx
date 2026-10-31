@@ -54,7 +54,7 @@ interface SidebarProps {
   activeProjectSlug: string;
   onSelectProject: (slug: string) => void;
   activeRole: UserRole;
-  onOpenAuthModal: () => void;
+  onOpenAuthModal?: () => void;
   onOpenAddModal: () => void;
   onOpenWorkspaceModal?: () => void;
   canEdit: boolean;
@@ -399,22 +399,22 @@ export default function Sidebar({
 
         {/* Bottom User & Role Strip */}
         <div className="p-3 border-t border-slate-200/80 dark:border-slate-800/80 bg-slate-50/50 dark:bg-[#0B1120]/50 space-y-2">
-          {/* RBAC Role Chip Button + Log Out Button */}
+          {/* RBAC Role Chip Button */}
           <div className="flex items-center gap-1.5">
             <button
               onClick={() => {
-                onOpenAuthModal();
+                onNavigate('settings');
                 onCloseMobile();
               }}
-              className={`flex-1 flex items-center justify-between p-2 rounded-xl text-xs font-semibold border transition-all truncate ${roleLabels[activeRole].badgeClass}`}
-              title="Click to Switch User / Role"
+              className={`flex-1 flex items-center justify-between p-2 rounded-xl text-xs font-semibold border transition-all truncate hover:opacity-90 cursor-pointer ${roleLabels[activeRole].badgeClass}`}
+              title="Workspace & Account Settings"
             >
               <div className="flex items-center gap-1.5 truncate">
                 <ShieldCheck className="w-3.5 h-3.5 shrink-0" />
                 <span className="truncate">{roleLabels[activeRole].label}</span>
               </div>
               <span className="text-[10px] uppercase font-mono font-bold opacity-70 shrink-0 ml-1">
-                RBAC
+                Owner
               </span>
             </button>
 
@@ -424,7 +424,7 @@ export default function Sidebar({
                 const next = toggleTheme();
                 setIsDark(next === 'dark');
               }}
-              className="p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700/60 text-slate-600 dark:text-slate-300 transition-colors shrink-0"
+              className="p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700/60 text-slate-600 dark:text-slate-300 transition-colors shrink-0 cursor-pointer"
               title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
             >
               {isDark ? (
@@ -432,20 +432,6 @@ export default function Sidebar({
               ) : (
                 <Moon className="w-4 h-4 text-slate-700" />
               )}
-            </button>
-
-            <button
-              onClick={() => {
-                if (typeof window !== 'undefined') {
-                  localStorage.removeItem('pulsewatch_token');
-                  localStorage.removeItem('pulsewatch_demo_role');
-                  window.location.href = '/';
-                }
-              }}
-              className="p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-850 hover:bg-rose-50 hover:border-rose-200 hover:text-rose-600 text-slate-500 transition-colors shrink-0"
-              title="Log Out (Sign Out)"
-            >
-              <LogOut className="w-4 h-4" />
             </button>
           </div>
         </div>

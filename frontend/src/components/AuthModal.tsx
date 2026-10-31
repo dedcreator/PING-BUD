@@ -319,14 +319,6 @@ export default function AuthModal({
             <span className="text-[10px] px-2 py-0.5 rounded-full font-mono font-bold bg-teal-500/10 text-teal-600 dark:text-teal-400 border border-teal-500/20 uppercase">
               Active
             </span>
-            <button
-              onClick={handleLogout}
-              className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-rose-50 hover:border-rose-200 hover:text-rose-600 text-slate-500 transition-colors flex items-center gap-1 text-[11px]"
-              title="Log Out (Sign Out)"
-            >
-              <LogOut className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Sign Out</span>
-            </button>
           </div>
         </div>
 

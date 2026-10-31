@@ -377,7 +377,6 @@ export default function DashboardPage() {
         activeProjectSlug={activeProjectSlug}
         onSelectProject={(slug) => setActiveProjectSlug(slug)}
         activeRole={activeRole}
-        onOpenAuthModal={() => setIsAuthModalOpen(true)}
         onOpenAddModal={() => setIsAddModalOpen(true)}
         onOpenWorkspaceModal={() => setIsWorkspaceModalOpen(true)}
         canEdit={canEdit}
@@ -709,7 +708,7 @@ export default function DashboardPage() {
         monitors={monitors}
         onSelectMonitor={(m) => setSelectedMonitor(m)}
         onOpenAdd={() => setIsAddModalOpen(true)}
-        onOpenAuth={() => setIsAuthModalOpen(true)}
+        onOpenAuth={() => setViewMode('settings')}
         onOpenDeveloper={() => setIsDeveloperModalOpen(true)}
         onOpenMaintenance={() => setViewMode('maintenance')}
         onExportCsv={() => window.open(getIncidentExportUrl('csv'), '_blank')}
