@@ -92,7 +92,7 @@ def auth_register(request):
     email = request.data.get('email', '').strip().lower()
     username = request.data.get('username', '').strip() or email.split('@')[0]
     password = request.data.get('password', '')
-    role = request.data.get('role', 'editor')
+    role = request.data.get('role', 'owner')
 
     if not email or not password:
         return Response({'error': 'Email and password are required'}, status=status.HTTP_400_BAD_REQUEST)
@@ -101,7 +101,7 @@ def auth_register(request):
         return Response({'error': 'User with this email already exists'}, status=status.HTTP_400_BAD_REQUEST)
 
     user = User.objects.create_user(username=username, email=email, password=password)
-    profile = UserProfile.objects.create(user=user, role=role if role in ('owner', 'editor', 'viewer') else 'editor')
+    profile = UserProfile.objects.create(user=user, role=role if role in ('owner', 'editor', 'viewer') else 'owner')
     token, _ = Token.objects.get_or_create(user=user)
 
     return Response({

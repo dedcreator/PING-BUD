@@ -43,7 +43,7 @@ export default function RegisterPage() {
   const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState<UserRole>('owner');
+  const role: UserRole = 'owner';
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState<{ text: string; error: boolean } | null>(null);
 
@@ -204,21 +204,6 @@ export default function RegisterPage() {
                 placeholder="••••••••"
                 className="w-full px-3.5 py-2 text-xs bg-slate-50 dark:bg-[#16223B] border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500"
               />
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                Initial Workspace Role
-              </label>
-              <select
-                value={role}
-                onChange={(e) => setRole(e.target.value as UserRole)}
-                className="w-full px-3.5 py-2 text-xs bg-slate-50 dark:bg-[#16223B] border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-teal-500 font-medium"
-              >
-                <option value="owner">Workspace Owner (Full Admin &amp; Billing)</option>
-                <option value="editor">DevOps Editor (Monitors, Probes & Alerts)</option>
-                <option value="viewer">Viewer (Read-only Observer)</option>
-              </select>
             </div>
 
             <div className="pt-2">

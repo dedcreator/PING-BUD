@@ -17,7 +17,6 @@ import SentiroLogo from '@/components/SentiroLogo';
 import {
   loginUser,
   loginWithGoogle,
-  switchDemoTierUser,
   forgotPassword,
   resetPassword,
 } from '@/lib/api';
@@ -161,27 +160,7 @@ export default function LoginPage() {
     }
   };
 
-  const handle1ClickSwitch = async (tier: 'free' | 'indie' | 'team') => {
-    try {
-      setLoading(true);
-      setMsg(null);
-      const res = await switchDemoTierUser(tier);
-      setMsg({
-        text: `Signed in as ${res.user.email} (${res.plan_tier}). Redirecting...`,
-        error: false,
-      });
-      setTimeout(() => {
-        router.push('/dashboard');
-      }, 700);
-    } catch (err: unknown) {
-      setMsg({
-        text: err instanceof Error ? err.message : 'Failed to switch user.',
-        error: true,
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-[#0B1120] text-slate-900 dark:text-slate-100 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
@@ -386,48 +365,6 @@ export default function LoginPage() {
               </div>
             </form>
           )}
-
-          {/* 1-Click Fast Switch Chips */}
-          <div className="mt-6 pt-5 border-t border-slate-100 dark:border-slate-800">
-            <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-2.5">
-              1-Click Demo Accounts
-            </span>
-            <div className="grid grid-cols-3 gap-2">
-              <button
-                type="button"
-                onClick={() => handle1ClickSwitch('free')}
-                disabled={loading}
-                className="p-2 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-teal-500 text-left text-xs transition-all cursor-pointer bg-slate-50/50 dark:bg-slate-900/50"
-              >
-                <div className="font-bold text-[11px] text-slate-900 dark:text-white">Free User</div>
-                <div className="text-[9px] text-slate-400 font-mono">₦0 Community</div>
-              </button>
-              <button
-                type="button"
-                onClick={() => handle1ClickSwitch('indie')}
-                disabled={loading}
-                className="p-2 rounded-xl border border-teal-200 dark:border-teal-900 hover:border-teal-500 text-left text-xs transition-all cursor-pointer bg-teal-50/40 dark:bg-teal-950/40"
-              >
-                <div className="font-bold text-[11px] text-teal-700 dark:text-teal-300 flex items-center gap-1">
-                  <span>Indie Pro</span>
-                  <Zap className="w-2.5 h-2.5" />
-                </div>
-                <div className="text-[9px] text-teal-600 dark:text-teal-400 font-mono">₦2,000/mo</div>
-              </button>
-              <button
-                type="button"
-                onClick={() => handle1ClickSwitch('team')}
-                disabled={loading}
-                className="p-2 rounded-xl border border-indigo-200 dark:border-indigo-900 hover:border-indigo-500 text-left text-xs transition-all cursor-pointer bg-indigo-50/40 dark:bg-indigo-950/40"
-              >
-                <div className="font-bold text-[11px] text-indigo-700 dark:text-indigo-300 flex items-center gap-1">
-                  <span>Team Pro</span>
-                  <Crown className="w-2.5 h-2.5 text-amber-500" />
-                </div>
-                <div className="text-[9px] text-indigo-600 dark:text-indigo-400 font-mono">₦5,000/mo</div>
-              </button>
-            </div>
-          </div>
         </div>
       </div>
     </div>
