@@ -26,4 +26,4 @@ RUN chmod +x build.sh && \
 
 EXPOSE 8000
 
-CMD ["gunicorn", "pulsewatch.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "3"]
+CMD ["sh", "-c", "gunicorn pulsewatch.wsgi:application --bind 0.0.0.0:${PORT:-8000} --workers 3"]
