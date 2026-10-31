@@ -1,2 +1,2 @@
-web: cd backend && gunicorn pulsewatch.wsgi:application --bind 0.0.0.0:$PORT
+web: bash start.sh
 worker: cd backend && python manage.py run_checks
