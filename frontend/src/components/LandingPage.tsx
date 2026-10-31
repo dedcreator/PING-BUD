@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import SentiroLogo from './SentiroLogo';
 import {
   Activity,
   ArrowRight,
@@ -31,10 +32,14 @@ import {
   X,
   Copy,
   Loader2,
+  Sun,
+  Moon,
 } from 'lucide-react';
 import { ProPlan, User } from '../types';
 import Interactive3DHero from './Interactive3DHero';
-import { submitDonation, createBachsCheckoutSession } from '../lib/api';
+import ThreeDGatewayPreview from './ThreeDGatewayPreview';
+import { submitDonation } from '../lib/api';
+import { toggleTheme, getInitialTheme } from '../lib/theme';
 
 const GoogleIcon = () => (
   <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
@@ -88,27 +93,38 @@ export default function LandingPage({
   const [isSubmittingDonation, setIsSubmittingDonation] = useState(false);
   const [donationSuccess, setDonationSuccess] = useState(false);
   const [copiedAccount, setCopiedAccount] = useState(false);
+  const [isDark, setIsDark] = useState(true);
+
+  React.useEffect(() => {
+    setIsDark(getInitialTheme() === 'dark');
+    const handler = (e: Event) => {
+      const customEvent = e as CustomEvent<{ theme: 'dark' | 'light' }>;
+      setIsDark(customEvent.detail?.theme === 'dark');
+    };
+    window.addEventListener('sentiro-theme-change', handler);
+    return () => window.removeEventListener('sentiro-theme-change', handler);
+  }, []);
 
   const faqs = [
     {
-      q: 'Why is pingbud.us priced in Nigerian Naira (₦2,000 & ₦5,000)?',
-      a: 'Most global monitoring platforms charge in US Dollars ($35 to $80/month), which translates to ₦55,000–₦125,000/month for African startups and engineers. pingbud.us runs ultra-lean on SQLite in WAL mode with sub-120MB RAM, allowing us to offer Indie Pro at ₦2,000/mo and Team Pro at ₦5,000/mo sustainably.'
+      q: 'Why is sentiro priced in Nigerian Naira (₦2,000 & ₦5,000)?',
+      a: 'Most global monitoring platforms charge in US Dollars ($35 to $80/month), which translates to ₦55,000–₦125,000/month for African startups and engineers. sentiro runs ultra-lean on SQLite in WAL mode with sub-120MB RAM, allowing us to offer Indie Pro at ₦2,000/mo and Team Pro at ₦5,000/mo sustainably.'
     },
     {
-      q: 'Can I self-host pingbud.us for my organization?',
-      a: 'Yes. pingbud.us provides a fully self-hostable containerized edition for teams with custom on-premises compliance needs, alongside our fully managed cloud SaaS with automated multi-region consensus probing.'
+      q: 'Can I self-host sentiro for my organization?',
+      a: 'Yes. sentiro provides a fully self-hostable containerized edition for teams with custom on-premises compliance needs, alongside our fully managed cloud SaaS with automated multi-region consensus probing.'
     },
     {
       q: 'How does Multi-Region Consensus probing eliminate false alarms?',
-      a: 'If a probe from Oregon or London reports a failure, pingbud.us automatically triggers confirmation checks from Lagos and Frankfurt before firing an alert. This ensures a temporary transatlantic transit blip does not trigger midnight wake-up alerts.'
+      a: 'If a probe from Oregon or London reports a failure, sentiro automatically triggers confirmation checks from Lagos and Frankfurt before firing an alert. This ensures a temporary transatlantic transit blip does not trigger midnight wake-up alerts.'
     },
     {
       q: 'Do you support Telegram Bot & Email incident notifications?',
-      a: 'Yes! pingbud.us natively integrates with Telegram Bot API (100% free with unlimited incident alerts and zero carrier fees) and high-deliverability SRE email dispatch for instantaneous outage alerts.'
+      a: 'Yes! sentiro natively integrates with Telegram Bot API (100% free with unlimited incident alerts and zero carrier fees) and high-deliverability SRE email dispatch for instantaneous outage alerts.'
     },
     {
       q: 'How does the AI Incident Root-Cause Analysis work?',
-      a: 'When an outage occurs, pingbud.us synthesizes HTTP status codes, DNS lookup times, TLS handshakes, and response headers into a plain-English explanation (e.g., "502 Bad Gateway: Upstream Gunicorn socket timeout during DB migration").'
+      a: 'When an outage occurs, sentiro synthesizes HTTP status codes, DNS lookup times, TLS handshakes, and response headers into a plain-English explanation (e.g., "502 Bad Gateway: Upstream Gunicorn socket timeout during DB migration").'
     }
   ];
 
@@ -118,23 +134,16 @@ export default function LandingPage({
       <header className="sticky top-0 z-40 border-b border-slate-200/80 dark:border-slate-800/80 backdrop-blur-xl bg-white/70 dark:bg-[#0B1120]/75">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-teal-600 text-white flex items-center justify-center shadow-sm">
-              <Activity className="w-5 h-5 stroke-[2.2]" />
-            </div>
-            <div className="flex flex-col">
-              <span className="font-extrabold text-base tracking-tight text-slate-900 dark:text-white flex items-center gap-1.5">
-                <span>pingbud.us</span>
-                <span className="text-[10px] font-mono uppercase px-1.5 py-0.2 rounded bg-slate-100 dark:bg-slate-800 text-teal-700 dark:text-teal-400 font-bold border border-slate-200 dark:border-slate-700">
-                  SaaS
-                </span>
-              </span>
-              <span className="text-[10px] text-slate-400 font-mono hidden sm:inline">
-                Zero-Overhead Synthetic Uptime
-              </span>
-            </div>
+            <Link href="/" className="hover:opacity-90 transition-opacity">
+              <SentiroLogo size="md" subtitle="The IT Sentinel" />
+            </Link>
           </div>
 
           <nav className="hidden md:flex items-center gap-6 text-xs font-semibold text-slate-600 dark:text-slate-300">
+            <a href="/status" className="hover:text-teal-600 dark:hover:text-teal-400 transition-colors flex items-center gap-1.5">
+              <Radio className="w-3.5 h-3.5 text-teal-600" />
+              <span>Status Page</span>
+            </a>
             <a href="#features" className="hover:text-teal-600 dark:hover:text-teal-400 transition-colors">
               Features
             </a>
@@ -150,10 +159,26 @@ export default function LandingPage({
           </nav>
 
           <div className="flex items-center gap-3">
+            {/* Dark / Light Theme Toggle */}
+            <button
+              onClick={() => {
+                const next = toggleTheme();
+                setIsDark(next === 'dark');
+              }}
+              className="p-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-transparent hover:bg-slate-100 dark:hover:bg-slate-800/80 text-slate-600 dark:text-slate-300 transition-colors cursor-pointer shadow-none focus:outline-none"
+              title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+            >
+              {isDark ? (
+                <Sun className="w-4 h-4 text-amber-400" />
+              ) : (
+                <Moon className="w-4 h-4 text-slate-700" />
+              )}
+            </button>
+
             <button
               onClick={() => setIsDonateModalOpen(true)}
               className="px-3.5 py-2 rounded-xl border border-rose-200 dark:border-rose-900/60 bg-rose-50/70 dark:bg-rose-950/20 hover:bg-rose-100 dark:hover:bg-rose-900/40 text-rose-600 dark:text-rose-400 text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
-              title="Support pingbud.us infrastructure"
+              title="Support sentiro infrastructure"
             >
               <Heart className="w-3.5 h-3.5 fill-rose-500 text-rose-500" />
               <span>Donate</span>
@@ -195,7 +220,7 @@ export default function LandingPage({
 
               <p className="text-base sm:text-lg text-slate-600 dark:text-slate-300 max-w-2xl leading-relaxed">
                 Stop paying <strong>$35 to $80 every month</strong> to legacy US SaaS providers.
-                pingbud.us provides sub-30s intervals, multi-region probes, Telegram & Email alerts, and AI
+                sentiro provides sub-30s intervals, multi-region probes, Telegram & Email alerts, and AI
                 root-cause analysis starting at just <strong className="text-teal-600 dark:text-teal-400">₦2,000/month</strong>.
               </p>
 
@@ -238,75 +263,8 @@ export default function LandingPage({
         </div>
       </section>
 
-      {/* LIVE INTERACTIVE PREVIEW CARD (LIQUID GLASS) */}
-      <section className="py-10 max-w-5xl mx-auto px-4 sm:px-6">
-        <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800/80 backdrop-blur-xl bg-white/75 dark:bg-[#0F172A]/85 shadow-lg p-6 sm:p-8">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-100 dark:border-slate-800">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold">
-                <CheckCircle2 className="w-5 h-5" />
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <h3 className="font-bold text-base text-slate-900 dark:text-white">
-                    Primary Production API Gateway
-                  </h3>
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 font-bold border border-emerald-200 dark:border-emerald-800">
-                    UP • 99.99%
-                  </span>
-                </div>
-                <div className="text-xs text-slate-500 font-mono mt-0.5">
-                  https://api.pingbud.us/v1/health • Interval: 30s
-                </div>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <div className="text-right">
-                <div className="text-[11px] font-mono text-slate-400 uppercase">Consensus Latency</div>
-                <div className="text-base font-extrabold text-teal-700 dark:text-teal-400 font-mono">
-                  42 ms
-                </div>
-              </div>
-              <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping" />
-            </div>
-          </div>
-
-          {/* 60-bucket Uptime visualization demo */}
-          <div className="mt-6">
-            <div className="flex items-center justify-between text-xs font-mono text-slate-500 mb-2">
-              <span>Past 60 Probes (Consensus Check)</span>
-              <span className="text-emerald-600 dark:text-emerald-400 font-bold">100.0% Uptime</span>
-            </div>
-            <div className="grid grid-cols-60 gap-1 h-7">
-              {Array.from({ length: 60 }).map((_, i) => (
-                <div
-                  key={i}
-                  className="bg-emerald-500 hover:bg-emerald-400 rounded-sm transition-all cursor-pointer"
-                  title={`Probe ${i + 1}: 200 OK (38ms)`}
-                />
-              ))}
-            </div>
-            <div className="flex items-center justify-between text-[11px] text-slate-400 mt-1.5 font-mono">
-              <span>30 mins ago</span>
-              <span>Just now</span>
-            </div>
-          </div>
-
-          {/* AI RCA Callout snippet */}
-          <div className="mt-6 p-4 rounded-xl bg-slate-100/70 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 flex items-start gap-3">
-            <Bot className="w-5 h-5 text-teal-600 dark:text-teal-400 shrink-0 mt-0.5" />
-            <div className="text-xs">
-              <span className="font-bold text-slate-900 dark:text-white">
-                Automated AI Incident Diagnosis:
-              </span>{' '}
-              <span className="text-slate-600 dark:text-slate-300">
-                SSL certificate valid for 74 days (Let's Encrypt). TLS 1.3 negotiated in 14ms from Lagos edge node. HTTP 200 OK returned with zero packet loss.
-              </span>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* LIVE 3D ANIMATED GATEWAY & TELEMETRY PREVIEW */}
+      <ThreeDGatewayPreview />
 
       {/* FEATURES GRID */}
       <section id="features" className="py-20 max-w-7xl mx-auto px-4 sm:px-6">
@@ -410,7 +368,7 @@ export default function LandingPage({
               Why Spend ₦55,000/mo on Legacy Monitoring?
             </h2>
             <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
-              Legacy providers charge massive markups. pingbud.us passes 100% of the architectural savings to you.
+              Legacy providers charge massive markups. sentiro passes 100% of the architectural savings to you.
             </p>
           </div>
 
@@ -429,7 +387,7 @@ export default function LandingPage({
                 <tr className="bg-teal-50/50 dark:bg-teal-950/30 font-bold text-slate-900 dark:text-white">
                   <td className="py-4 px-5 font-sans font-bold flex items-center gap-2">
                     <span className="w-2.5 h-2.5 rounded-full bg-teal-600" />
-                    <span>pingbud.us Indie Pro</span>
+                    <span>sentiro Indie Pro</span>
                   </td>
                   <td className="py-4 px-5 text-teal-700 dark:text-teal-400 text-sm font-extrabold">
                     ₦2,000 / mo
@@ -478,7 +436,7 @@ export default function LandingPage({
             Transparent Nigerian Naira Plans
           </h2>
           <p className="mt-3 text-sm sm:text-base text-slate-600 dark:text-slate-400">
-            No unexpected FX charges. Pay locally in Naira via Bachs (Virtual Bank Accounts, Direct Transfer & Cards).
+            No unexpected FX charges. Pay locally in Naira (Virtual Bank Accounts, Direct Transfer &amp; Cards).
           </p>
 
           {/* Billing Switch */}
@@ -698,7 +656,7 @@ export default function LandingPage({
             Frequently Asked Questions
           </h2>
           <p className="mt-2 text-xs sm:text-sm text-slate-500 dark:text-slate-400">
-            Everything you need to know about pingbud.us's Naira pricing and architecture.
+            Everything you need to know about sentiro's Naira pricing and architecture.
           </p>
         </div>
 
@@ -736,15 +694,7 @@ export default function LandingPage({
             {/* Col 1: Brand & Positioning */}
             <div className="col-span-2 space-y-4">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-teal-600 text-white flex items-center justify-center shadow-sm">
-                  <Activity className="w-5 h-5 stroke-[2.2]" />
-                </div>
-                <div className="font-extrabold text-base tracking-tight text-slate-900 dark:text-white flex items-center gap-1.5">
-                  <span>pingbud.us</span>
-                  <span className="text-[10px] font-mono uppercase px-1.5 py-0.2 rounded bg-teal-50 dark:bg-teal-950/70 text-teal-700 dark:text-teal-400 font-bold border border-teal-200 dark:border-teal-800">
-                    SaaS
-                  </span>
-                </div>
+                <SentiroLogo size="md" subtitle="The IT Sentinel" />
               </div>
 
               <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed max-w-sm">
@@ -753,7 +703,7 @@ export default function LandingPage({
 
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-[#16223B] border border-slate-200 dark:border-slate-800 text-[11px] text-slate-600 dark:text-slate-300 font-mono">
                 <ShieldCheck className="w-3.5 h-3.5 text-teal-600" />
-                <span>Secured by Bachs (<span className="text-teal-600 dark:text-teal-400 font-bold">bachs.io</span>)</span>
+                <span>Secured 256-Bit Bank Transfer &amp; Card Gateway</span>
               </div>
             </div>
 
@@ -814,7 +764,7 @@ export default function LandingPage({
                 </li>
                 <li>
                   <button onClick={onGoToBilling} className="hover:text-teal-600 dark:hover:text-teal-400 transition-colors">
-                    Bachs Virtual Accounts
+                    Instant Virtual Accounts
                   </button>
                 </li>
                 <li>
@@ -863,7 +813,7 @@ export default function LandingPage({
           {/* Bottom Legal & Copyright Bar */}
           <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400">
             <div className="flex items-center gap-2">
-              <span>© 2026 pingbud.us Inc. All rights reserved.</span>
+              <span>© 2026 sentiro Inc. All rights reserved.</span>
               <span className="hidden sm:inline">•</span>
               <span className="hidden sm:inline">Built for high-reliability infrastructure.</span>
             </div>
@@ -903,10 +853,10 @@ export default function LandingPage({
                   <CheckCircle2 className="w-8 h-8" />
                 </div>
                 <h3 className="text-xl font-bold text-slate-900 dark:text-white">
-                  Thank You for Supporting pingbud.us!
+                  Thank You for Supporting sentiro!
                 </h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400 max-w-xs mx-auto leading-relaxed">
-                  Your contribution directly funds multi-region consensus probing nodes and ensures pingbud.us stays fast, independent, and priced at ₦2,000/mo.
+                  Your contribution directly funds multi-region consensus probing nodes and ensures sentiro stays fast, independent, and priced at ₦2,000/mo.
                 </p>
                 <button
                   onClick={() => {
@@ -926,7 +876,7 @@ export default function LandingPage({
                   </div>
                   <div>
                     <h3 className="text-base font-bold text-slate-900 dark:text-white">
-                      Support pingbud.us
+                      Support sentiro
                     </h3>
                     <p className="text-xs text-slate-500 dark:text-slate-400">
                       Help keep uptime monitoring ultra-affordable (₦2,000/mo)
@@ -973,11 +923,11 @@ export default function LandingPage({
                   </div>
                 </div>
 
-                {/* Bachs Virtual Transfer Account Details */}
+                {/* Direct Virtual Transfer Account Details */}
                 <div className="p-3.5 rounded-2xl bg-teal-500/5 border border-teal-500/20 space-y-2">
                   <div className="flex items-center justify-between text-xs">
                     <span className="font-bold text-teal-800 dark:text-teal-300">
-                      Bachs Direct Bank Transfer
+                      Direct Bank Transfer
                     </span>
                     <span className="text-[10px] font-mono text-teal-600 dark:text-teal-400 bg-teal-100 dark:bg-teal-900/40 px-2 py-0.5 rounded-full font-bold">
                       Zero Fees
@@ -987,11 +937,11 @@ export default function LandingPage({
                   <div className="space-y-1.5 text-xs text-slate-600 dark:text-slate-300">
                     <div className="flex items-center justify-between">
                       <span className="text-slate-400 text-[11px]">Bank:</span>
-                      <span className="font-semibold text-slate-900 dark:text-white">Providus Bank / Bachs Gateway</span>
+                      <span className="font-semibold text-slate-900 dark:text-white">Providus Bank / Instant Settlement</span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-slate-400 text-[11px]">Account Name:</span>
-                      <span className="font-semibold text-slate-900 dark:text-white">pingbud.us Community Pool</span>
+                      <span className="font-semibold text-slate-900 dark:text-white">sentiro Community Pool</span>
                     </div>
                     <div className="flex items-center justify-between pt-1">
                       <span className="text-slate-400 text-[11px]">Account Number:</span>
@@ -1048,8 +998,8 @@ export default function LandingPage({
                       await submitDonation({
                         donor_name: donorName.trim() || 'Anonymous Supporter',
                         amount: Number(customAmount) || donateAmount,
-                        message: donorMessage.trim() || 'Keep pingbud.us independent and low-cost!',
-                        source: 'bachs_transfer',
+                        message: donorMessage.trim() || 'Keep sentiro independent and low-cost!',
+                        source: 'direct_transfer',
                       });
                       setDonationSuccess(true);
                     } catch (err) {

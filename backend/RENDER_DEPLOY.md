@@ -1,6 +1,6 @@
 # 🚀 Deploying PulseWatch Backend on Render
 
-Deploy the **PulseWatch (PingBud)** Django REST API to [Render](https://render.com) for free with automated SSL, continuous deployment, and WhiteNoise static serving.
+Deploy the **PulseWatch (Sentiro)** Django REST API to [Render](https://render.com) for free with automated SSL, continuous deployment, and WhiteNoise static serving.
 
 ---
 
@@ -40,7 +40,13 @@ If you prefer to configure the Web Service manually:
    - `DJANGO_SECRET_KEY` = *(click Generate)*
    - `DEBUG` = `False`
    - `ALLOWED_HOSTS` = `*`
-   - `CSRF_TRUSTED_ORIGINS` = `https://*.onrender.com`
+   - `CSRF_TRUSTED_ORIGINS` = `https://*.onrender.com,https://sentiro.xyz`
+   - `FEEDBACK_RECEIVE_EMAIL` = `your_email@domain.com` *(Email address where user Feature Requests & Bug Reports will be delivered)*
+   - `RESEND_API_KEY` = `re_...` *(Your Resend API Key from resend.com for email delivery)*
+   - `RESEND_FROM_EMAIL` = `Sentiro Alerts <alerts@sentiro.xyz>`
+   - `BACHS_API_KEY` = `sk_live_...` *(Your Bachs API Secret from docs.bachs.io for billing)*
+   - `BACHS_WEBHOOK_SECRET` = `whsec_...` *(Your Bachs Webhook Secret)*
+   - `TELEGRAM_BOT_TOKEN` = `...` *(Your Telegram bot token from @BotFather)*
 5. Click **"Create Web Service"**.
 
 ---

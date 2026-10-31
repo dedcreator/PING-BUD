@@ -20,15 +20,19 @@ import {
 export function getApiBase(): string {
   if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL;
   if (typeof window !== 'undefined') {
-    const host = window.location.hostname || '127.0.0.1';
-    return `http://${host}:8000`;
+    if (window.location.port === '3000') {
+      return `http://${window.location.hostname || '127.0.0.1'}:8000`;
+    }
+    return '';
   }
   return 'http://127.0.0.1:8000';
 }
 
 const API_BASE =
   typeof window !== 'undefined'
-    ? `http://${window.location.hostname || '127.0.0.1'}:8000`
+    ? (window.location.port === '3000'
+        ? `http://${window.location.hostname || '127.0.0.1'}:8000`
+        : (process.env.NEXT_PUBLIC_API_URL || ''))
     : (process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000');
 
 // Global demo role header state for testing RBAC live in UI
@@ -81,7 +85,7 @@ const fallbackSummary: StatusSummary = {
 };
 
 const fallbackPro: ProPlan = {
-  name: "pingbud.us Indie Pro",
+  name: "sentiro Indie Pro",
   is_active: false,
   price_monthly: 2000.00,
   price_yearly: 20000.00,
@@ -614,15 +618,27 @@ export async function deleteApiKey(id: number): Promise<void> {
 export async function fetchStatusPage(): Promise<{
   system_status: string;
   status_headline: string;
+  avg_sla_90d?: number;
   company_name?: string;
+  headline?: string;
   announcement_text?: string;
   custom_domain?: string;
   updated_at: string;
+  component_groups?: Array<{
+    name: string;
+    description: string;
+    monitors: Monitor[];
+  }>;
   monitors: Monitor[];
   active_incidents: Incident[];
+  past_incidents?: Incident[];
   recent_posts: Array<{ id: number; title: string; body: string; kind: string; created_at: string }>;
+  scheduled_maintenances?: Array<{ id: number; title: string; description: string; starts_at: string; ends_at: string }>;
 }> {
   const res = await fetch(`${API_BASE}/api/status-page/`, { headers: getHeaders(), cache: 'no-store' });
+  if (!res.ok) {
+    throw new Error('Failed to load status page');
+  }
   return await res.json();
 }
 
@@ -640,6 +656,32 @@ export async function updateStatusPageConfig(data: Partial<StatusPageConfig>): P
   if (!res.ok) {
     const err = await res.json();
     throw new Error(err.error || 'Failed to update config');
+  }
+  return await res.json();
+}
+
+export async function subscribeToStatusPage(channel: string, endpoint: string): Promise<{ status: string; message: string }> {
+  const res = await fetch(`${API_BASE}/api/status-page/subscribe/`, {
+    method: 'POST',
+    headers: getHeaders(),
+    body: JSON.stringify({ channel, endpoint }),
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.error || 'Subscription failed');
+  }
+  return await res.json();
+}
+
+export async function createStatusPost(title: string, body: string, kind: string): Promise<any> {
+  const res = await fetch(`${API_BASE}/api/status-page/posts/`, {
+    method: 'POST',
+    headers: getHeaders(),
+    body: JSON.stringify({ title, body, kind }),
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.error || 'Failed to publish post');
   }
   return await res.json();
 }
@@ -664,11 +706,11 @@ export async function fetchBillingOverview(): Promise<BillingOverview> {
         billing_cycle: 'monthly',
       },
       payment_method: {
-        type: 'bachs_virtual_account',
-        brand: 'Bachs SaaS Billing',
+        type: 'virtual_account',
+        brand: 'Sentiro Pro Billing',
         last4: '4242',
         expiry: '12/28',
-        provider: 'Bachs (bachs.io)',
+        provider: 'Direct Settlement',
       },
       usage_quotas: {
         monitors_used: 7,
@@ -682,23 +724,23 @@ export async function fetchBillingOverview(): Promise<BillingOverview> {
         {
           id: 1,
           invoice_id: 'INV-2026-9403',
-          plan_name: 'pingbud.us Indie Pro (Monthly)',
+          plan_name: 'sentiro Indie Pro (Monthly)',
           amount: 2000.0,
           currency: 'NGN',
           currency_symbol: '₦',
           status: 'Paid',
-          payment_method: 'Bachs / Providus Bank Transfer',
+          payment_method: 'Providus Bank Transfer',
           created_at: new Date().toISOString(),
         },
         {
           id: 2,
           invoice_id: 'INV-2026-8821',
-          plan_name: 'pingbud.us Indie Pro (Monthly)',
+          plan_name: 'sentiro Indie Pro (Monthly)',
           amount: 2000.0,
           currency: 'NGN',
           currency_symbol: '₦',
           status: 'Paid',
-          payment_method: 'Bachs / Card (Mastercard •••• 4242)',
+          payment_method: 'Mastercard (•••• 4242)',
           created_at: new Date(Date.now() - 28 * 86400000).toISOString(),
         },
       ],
@@ -719,9 +761,10 @@ export async function selectBillingPlan(tier: 'community' | 'indie_pro' | 'team_
   return await res.json();
 }
 
-export async function createBachsCheckoutSession(planId: string, billingCycle: 'monthly' | 'yearly'): Promise<{
+export async function createDirectCheckoutSession(planId: string, billingCycle: 'monthly' | 'yearly', amount?: number): Promise<{
   reference: string;
   checkout_url: string;
+  hosted_checkout_url?: string;
   amount: number;
   currency: string;
   plan_id: string;
@@ -736,17 +779,19 @@ export async function createBachsCheckoutSession(planId: string, billingCycle: '
   };
   status: string;
 }> {
-  const res = await fetch(`${API_BASE}/api/billing/bachs-checkout/`, {
+  const res = await fetch(`${API_BASE}/api/billing/checkout/`, {
     method: 'POST',
     headers: getHeaders(),
-    body: JSON.stringify({ plan_id: planId, billing_cycle: billingCycle }),
+    body: JSON.stringify({ plan_id: planId, billing_cycle: billingCycle, amount }),
   });
   if (!res.ok) {
-    const err = await res.json().catch(() => ({ error: 'Bachs checkout initialization failed' }));
-    throw new Error(err.error || 'Failed to initiate Bachs checkout');
+    const err = await res.json().catch(() => ({ error: 'Checkout initialization failed' }));
+    throw new Error(err.error || 'Failed to initiate checkout');
   }
   return await res.json();
 }
+
+export const createBachsCheckoutSession = createDirectCheckoutSession;
 
 export async function fetchProInfo(): Promise<{
   pro_subscription: ProPlan;
@@ -846,3 +891,83 @@ export async function sendTestEmail(toEmail?: string): Promise<{ ok: boolean; me
   });
   return await res.json();
 }
+
+export async function fetchAuditLogs(category = 'all', search = ''): Promise<any[]> {
+  const params = new URLSearchParams();
+  if (category && category !== 'all') params.append('category', category);
+  if (search) params.append('search', search);
+
+  const res = await fetch(`${API_BASE}/api/audit-logs/?${params.toString()}`, {
+    headers: getHeaders(),
+  });
+  if (!res.ok) {
+    return [];
+  }
+  return await res.json();
+}
+
+export function getAuditLogExportUrl(format: 'csv' | 'json' = 'json'): string {
+  return `${API_BASE}/api/audit-logs/export/?format=${format}`;
+}
+
+export async function submitFeedback(payload: {
+  mode: 'feature' | 'issue';
+  title: string;
+  description: string;
+  category?: string;
+  severity?: string;
+  email?: string;
+}): Promise<{ ok: boolean; message: string; dispatched_to?: string }> {
+  const res = await fetch(`${API_BASE}/api/feedback/`, {
+    method: 'POST',
+    headers: getHeaders(),
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: 'Failed to submit feedback' }));
+    throw new Error(err.error || 'Failed to submit feedback');
+  }
+  return await res.json();
+}
+
+export async function fetchTotpSetup(): Promise<{
+  secret: string;
+  otpauth_url: string;
+  totp_enabled: boolean;
+  account_name: string;
+}> {
+  const res = await fetch(`${API_BASE}/api/auth/totp/setup/`, {
+    headers: getHeaders(),
+  });
+  if (!res.ok) {
+    throw new Error('Failed to load TOTP setup credentials');
+  }
+  return await res.json();
+}
+
+export async function verifyTotp(code: string): Promise<{ ok: boolean; message: string; totp_enabled: boolean }> {
+  const res = await fetch(`${API_BASE}/api/auth/totp/verify/`, {
+    method: 'POST',
+    headers: getHeaders(),
+    body: JSON.stringify({ code }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: 'Invalid verification code' }));
+    throw new Error(err.error || 'Invalid verification code');
+  }
+  return await res.json();
+}
+
+export async function disableTotp(): Promise<{ ok: boolean; message: string; totp_enabled: boolean }> {
+  const res = await fetch(`${API_BASE}/api/auth/totp/disable/`, {
+    method: 'POST',
+    headers: getHeaders(),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: 'Failed to disable 2FA' }));
+    throw new Error(err.error || 'Failed to disable 2FA');
+  }
+  return await res.json();
+}
+
+

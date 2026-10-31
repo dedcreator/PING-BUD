@@ -77,6 +77,7 @@ export default function AddMonitorModal({
   } | null>(null);
 
   const [saving, setSaving] = useState(false);
+  const [deploySuccess, setDeploySuccess] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
   const canEdit = userRole === 'owner' || userRole === 'editor';
@@ -174,10 +175,9 @@ export default function AddMonitorModal({
       };
 
       await onSubmit(monitorData);
-      onClose();
+      setDeploySuccess(true);
     } catch (err: unknown) {
       setErrorMsg(err instanceof Error ? err.message : 'Failed to create monitor');
-    } finally {
       setSaving(false);
     }
   };
@@ -251,6 +251,12 @@ export default function AddMonitorModal({
             monitorName={name.trim() || target.trim()}
             target={target.trim()}
             regions={regions}
+            isSuccess={deploySuccess}
+            onComplete={() => {
+              setSaving(false);
+              setDeploySuccess(false);
+              onClose();
+            }}
           />
         )}
 
@@ -607,7 +613,7 @@ export default function AddMonitorModal({
                     type="text"
                     value={headersJsonStr}
                     onChange={(e) => setHeadersJsonStr(e.target.value)}
-                    placeholder='{"Authorization": "Bearer key", "User-Agent": "pingbud.us"}'
+                    placeholder='{"Authorization": "Bearer key", "User-Agent": "sentiro"}'
                     className="w-full px-2.5 py-1.5 text-xs font-mono bg-slate-50 dark:bg-[#16223B] border border-slate-200 dark:border-slate-700 rounded-md text-slate-900 dark:text-white"
                   />
                 </div>

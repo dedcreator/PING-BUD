@@ -45,7 +45,7 @@ export default function StandaloneIncidentsPage() {
             </div>
             <div className="flex flex-col">
               <span className="font-extrabold text-base tracking-tight text-slate-900 flex items-center gap-1.5">
-                <span>pingbud.us</span>
+                <span>sentiro</span>
                 <span className="text-[10px] font-mono uppercase px-1.5 py-0.2 rounded bg-rose-50 text-rose-700 font-bold border border-rose-200">
                   Incidents
                 </span>

@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { ApiKey, UserRole } from '../types';
 import { fetchApiKeys, createApiKey, deleteApiKey } from '../lib/api';
+import SentiroLogo from './SentiroLogo';
 
 interface DeveloperModalProps {
   isOpen: boolean;
@@ -100,12 +101,10 @@ export default function DeveloperModal({
         {/* Header */}
         <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-indigo-600/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
-              <Terminal className="w-5 h-5 stroke-[2.2]" />
-            </div>
+            <SentiroLogo size="sm" showText={false} />
             <div>
               <h2 className="text-base font-bold text-slate-900 dark:text-white">
-                Developer API & Observability Integrations
+                Sentiro Developer API & Observability
               </h2>
               <p className="text-xs text-slate-500 dark:text-slate-400">
                 Scoped API Keys, Prometheus /metrics & Embed Badges
@@ -153,7 +152,7 @@ export default function DeveloperModal({
                 </button>
               </div>
               <p className="text-[10px] text-emerald-600 dark:text-emerald-400 mt-1">
-                Store this token safely now. pingbud.us hashes keys with SHA-256 and will not display it again.
+                Store this token safely now. sentiro hashes keys with SHA-256 and will not display it again.
               </p>
             </div>
           )}

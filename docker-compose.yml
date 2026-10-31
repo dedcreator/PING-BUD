@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: sentiro_backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - DJANGO_SECRET_KEY=sentiro_production_secret_key_change_me
+      - DEBUG=False
+      - ALLOWED_HOSTS=*
+      - CSRF_TRUSTED_ORIGINS=http://localhost:3000,https://sentiro.xyz,https://*.sentiro.xyz,https://*.pxxl.app,https://*.pxxl.pro
+      - BACHS_API_KEY=${BACHS_API_KEY:-}
+      - BACHS_WEBHOOK_SECRET=${BACHS_WEBHOOK_SECRET:-}
+      - BACHS_BASE_URL=https://api.bachs.io
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN:-}
+      - RESEND_API_KEY=${RESEND_API_KEY:-}
+      - RESEND_FROM_EMAIL=${RESEND_FROM_EMAIL:-alerts@sentiro.xyz}
+    volumes:
+      - ./backend/db.sqlite3:/app/db.sqlite3
+
+  checker_worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: sentiro_checker_worker
+    restart: unless-stopped
+    command: python manage.py run_checks
+    depends_on:
+      - backend
+    volumes:
+      - ./backend/db.sqlite3:/app/db.sqlite3
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: sentiro_frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+    depends_on:
+      - backend

@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { registerUser, loginWithGoogle } from '@/lib/api';
 import { UserRole } from '@/types';
+import SentiroLogo from '@/components/SentiroLogo';
 
 const GoogleIcon = () => (
   <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
@@ -101,15 +102,10 @@ export default function RegisterPage() {
           href="/"
           className="inline-flex items-center gap-2.5 group transition-transform hover:scale-105"
         >
-          <div className="w-10 h-10 rounded-xl bg-teal-600 text-white flex items-center justify-center shadow-md">
-            <Activity className="w-6 h-6 stroke-[2.2]" />
-          </div>
-          <span className="font-extrabold text-2xl tracking-tight text-slate-900 dark:text-white">
-            pingbud.us
-          </span>
+          <SentiroLogo size="lg" subtitle="The IT Sentinel" />
         </Link>
         <h2 className="mt-4 text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
-          Create your pingbud.us account
+          Create your sentiro account
         </h2>
         <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
           Already have an account?{' '}
@@ -219,7 +215,7 @@ export default function RegisterPage() {
                 onChange={(e) => setRole(e.target.value as UserRole)}
                 className="w-full px-3.5 py-2 text-xs bg-slate-50 dark:bg-[#16223B] border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-teal-500 font-medium"
               >
-                <option value="owner">Workspace Owner (Full Admin & Bachs Billing)</option>
+                <option value="owner">Workspace Owner (Full Admin &amp; Billing)</option>
                 <option value="editor">DevOps Editor (Monitors, Probes & Alerts)</option>
                 <option value="viewer">Viewer (Read-only Observer)</option>
               </select>
@@ -246,7 +242,7 @@ export default function RegisterPage() {
             </div>
             <div className="flex items-center gap-1.5">
               <CheckCircle2 className="w-3.5 h-3.5 text-teal-600 shrink-0" />
-              <span>Nigerian Naira payments via Bachs (₦2,000 & ₦5,000)</span>
+              <span>Nigerian Naira payments (₦2,000 &amp; ₦5,000 Instant Transfer &amp; Cards)</span>
             </div>
           </div>
         </div>

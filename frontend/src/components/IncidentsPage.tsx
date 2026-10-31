@@ -55,7 +55,7 @@ export default function IncidentsPage({
       <!DOCTYPE html>
       <html>
       <head>
-        <title>SLA Attestation Certificate - pingbud.us</title>
+        <title>SLA Attestation Certificate - sentiro</title>
         <style>
           body { font-family: -apple-system, sans-serif; padding: 40px; color: #0f172a; }
           .header { display: flex; justify-content: space-between; border-bottom: 2px solid #0d9488; padding-bottom: 16px; }
@@ -67,7 +67,7 @@ export default function IncidentsPage({
       </head>
       <body>
         <div class="header">
-          <div><div class="logo">pingbud.us</div><div style="font-size:12px;color:#64748b;">SRE Contractual SLA Attestation</div></div>
+          <div><div class="logo">sentiro</div><div style="font-size:12px;color:#64748b;">SRE Contractual SLA Attestation</div></div>
           <div style="text-align:right;">
             <div style="font-size:11px;color:#64748b;">ATTESTATION ${slaReport?.attestation_id || 'SLA-CERT'}</div>
             <span class="badge">SLA COMPLIANT</span>
@@ -80,7 +80,7 @@ export default function IncidentsPage({
           <p><strong>Allowed Monthly Error Budget:</strong> ${slaReport?.allowed_downtime_minutes || 43.2} minutes</p>
           <p><strong>Actual Recorded Downtime:</strong> ${slaReport?.actual_downtime_minutes || 0} minutes</p>
           <p><strong>Remaining Budget:</strong> ${slaReport?.remaining_budget_minutes || 43.2} minutes (${slaReport?.remaining_budget_pct || 100}% safe)</p>
-          <p style="font-size:11px;color:#64748b;margin-top:16px;">Cryptographically verified by pingbud.us multi-region consensus probe engine on ${new Date().toISOString()}.</p>
+          <p style="font-size:11px;color:#64748b;margin-top:16px;">Cryptographically verified by sentiro multi-region consensus probe engine on ${new Date().toISOString()}.</p>
         </div>
       </body>
       </html>

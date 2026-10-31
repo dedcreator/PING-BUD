@@ -271,7 +271,7 @@ export default function MonitorDetailModal({
               curl -s "http://127.0.0.1:8000/hb/{monitor.heartbeat_token}/"
             </pre>
             <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-2">
-              Add this curl at the end of your scheduled job or bash script. If pingbud.us does not receive a ping within {monitor.interval_seconds}s, an incident alert is triggered immediately.
+              Add this curl at the end of your scheduled job or bash script. If sentiro does not receive a ping within {monitor.interval_seconds}s, an incident alert is triggered immediately.
             </p>
           </div>
         )}

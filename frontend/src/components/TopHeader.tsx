@@ -13,8 +13,12 @@ import {
   ChevronRight,
   ShieldCheck,
   LogOut,
+  Sun,
+  Moon,
 } from 'lucide-react';
 import { UserRole } from '../types';
+import { toggleTheme, getInitialTheme } from '../lib/theme';
+import SentiroLogo from './SentiroLogo';
 
 interface TopHeaderProps {
   title: string;
@@ -44,6 +48,17 @@ export default function TopHeader({
   activeIncidentsCount,
 }: TopHeaderProps) {
   const isOutage = activeIncidentsCount > 0;
+  const [isDark, setIsDark] = React.useState(true);
+
+  React.useEffect(() => {
+    setIsDark(getInitialTheme() === 'dark');
+    const handler = (e: Event) => {
+      const customEvent = e as CustomEvent<{ theme: 'dark' | 'light' }>;
+      setIsDark(customEvent.detail?.theme === 'dark');
+    };
+    window.addEventListener('sentiro-theme-change', handler);
+    return () => window.removeEventListener('sentiro-theme-change', handler);
+  }, []);
 
   return (
     <header className="sticky top-0 z-30 h-16 backdrop-blur-xl bg-white/70 dark:bg-[#0B1120]/75 border-b border-slate-200/80 dark:border-slate-800/80 px-4 sm:px-6 flex items-center justify-between gap-4 transition-colors">
@@ -56,6 +71,11 @@ export default function TopHeader({
         >
           <Menu className="w-5 h-5" />
         </button>
+
+        {/* Mobile brand badge */}
+        <div className="lg:hidden flex items-center shrink-0">
+          <SentiroLogo size="xs" showText={false} />
+        </div>
 
         <div>
           <div className="flex items-center gap-2">
@@ -113,6 +133,22 @@ export default function TopHeader({
           title="Developer Scoped API Keys & Metrics"
         >
           <Terminal className="w-4 h-4 text-teal-600 dark:text-teal-400" />
+        </button>
+
+        {/* Dark / Light Theme Toggle */}
+        <button
+          onClick={() => {
+            const next = toggleTheme();
+            setIsDark(next === 'dark');
+          }}
+          className="p-2 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100/80 dark:hover:bg-slate-800/60 rounded-xl transition-colors"
+          title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+        >
+          {isDark ? (
+            <Sun className="w-4 h-4 text-amber-400" />
+          ) : (
+            <Moon className="w-4 h-4 text-slate-600" />
+          )}
         </button>
 
         {/* Refresh Button */}

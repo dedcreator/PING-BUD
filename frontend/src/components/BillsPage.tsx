@@ -20,9 +20,10 @@ import { UserRole, BillingOverview, Invoice, ProPlan } from '../types';
 import {
   fetchBillingOverview,
   selectBillingPlan,
-  createBachsCheckoutSession,
+  createDirectCheckoutSession,
   submitDonation,
 } from '../lib/api';
+import SentiroLogo from './SentiroLogo';
 
 interface BillsPageProps {
   onBackToDashboard: () => void;
@@ -40,13 +41,16 @@ export default function BillsPage({
   const [updatingTier, setUpdatingTier] = useState<string | null>(null);
   const [toastMsg, setToastMsg] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
 
-  // Bachs Checkout Modal State
+  // Direct Checkout Modal State (Bachs docs.bachs.io)
   const [checkoutModalOpen, setCheckoutModalOpen] = useState(false);
   const [checkoutPlan, setCheckoutPlan] = useState<'indie_pro' | 'team_pro'>('indie_pro');
   const [checkoutAmount, setCheckoutAmount] = useState<number>(2000);
+  const [checkoutSession, setCheckoutSession] = useState<any | null>(null);
+  const [isLoadingCheckout, setIsLoadingCheckout] = useState(false);
   const [isProcessingCheckout, setIsProcessingCheckout] = useState(false);
   const [checkoutSuccess, setCheckoutSuccess] = useState(false);
   const [copiedAccount, setCopiedAccount] = useState(false);
+  const [copiedRef, setCopiedRef] = useState(false);
 
   // Community Donation State
   const [isDonateModalOpen, setIsDonateModalOpen] = useState(false);
@@ -103,22 +107,45 @@ export default function BillsPage({
     }
   };
 
-  const handleOpenCheckout = (plan: 'indie_pro' | 'team_pro') => {
+  const handleOpenCheckout = async (plan: 'indie_pro' | 'team_pro') => {
     if (!isOwner) {
       setToastMsg({ text: 'Only the Workspace Owner can manage payments.', type: 'error' });
       setTimeout(() => setToastMsg(null), 3500);
       return;
     }
     setCheckoutPlan(plan);
-    setCheckoutAmount(plan === 'indie_pro' ? 2000 : 5000);
+    const amount = plan === 'indie_pro' ? 2000 : 5000;
+    setCheckoutAmount(amount);
     setCheckoutSuccess(false);
     setCheckoutModalOpen(true);
+    setIsLoadingCheckout(true);
+
+    try {
+      const session = await createDirectCheckoutSession(plan, 'monthly');
+      setCheckoutSession(session);
+      if (session.amount) setCheckoutAmount(session.amount);
+    } catch {
+      // Fallback virtual account
+      setCheckoutSession({
+        reference: `BCHS-${Date.now().toString(36).toUpperCase()}`,
+        amount,
+        provider: 'Bachs (docs.bachs.io)',
+        virtual_account: {
+          bank_name: 'Providus Bank',
+          account_number: '0129841029',
+          account_name: 'Sentiro Settlement',
+          instructions: 'Transfer exact amount from any Nigerian bank app. Automatic reconciliation in < 15 seconds.',
+        }
+      });
+    } finally {
+      setIsLoadingCheckout(false);
+    }
   };
 
-  const handleConfirmBachsPayment = async () => {
+  const handleConfirmDirectPayment = async () => {
     try {
       setIsProcessingCheckout(true);
-      await createBachsCheckoutSession(checkoutPlan, 'monthly');
+      await createDirectCheckoutSession(checkoutPlan, 'monthly');
 
       const res = await selectBillingPlan(checkoutPlan);
       if (onProPlanUpdated && res.pro_subscription) {
@@ -144,12 +171,12 @@ export default function BillsPage({
       await submitDonation({
         donor_name: donorName.trim() || 'Community Supporter',
         amount: finalAmount,
-        message: donorMessage.trim() || 'Supporting pingbud.us infrastructure!',
-        source: 'Bachs Virtual Account / Card',
+        message: donorMessage.trim() || 'Supporting sentiro infrastructure!',
+        source: 'Direct Bank Transfer / Card',
       });
       setDonationSuccess(true);
     } catch {
-      setToastMsg({ text: 'Thank you for supporting pingbud.us!', type: 'success' });
+      setToastMsg({ text: 'Thank you for supporting sentiro!', type: 'success' });
       setDonationSuccess(true);
     } finally {
       setIsSubmittingDonation(false);
@@ -161,7 +188,7 @@ export default function BillsPage({
       <!DOCTYPE html>
       <html>
       <head>
-        <title>Receipt ${inv.invoice_id} - pingbud.us</title>
+        <title>Receipt ${inv.invoice_id} - sentiro</title>
         <style>
           body { font-family: -apple-system, sans-serif; padding: 40px; color: #0f172a; }
           .header { display: flex; justify-content: space-between; border-bottom: 2px solid #0d9488; padding-bottom: 16px; }
@@ -175,7 +202,13 @@ export default function BillsPage({
       </head>
       <body>
         <div class="header">
-          <div><div class="logo">pingbud.us</div><div style="font-size:12px;color:#64748b;">Synthetic Uptime</div></div>
+          <div style="display:flex;align-items:center;gap:12px;">
+            <img src="/logo-badge.svg" width="36" height="36" alt="Sentiro" style="border-radius:50%;border:1px solid #0d9488;" />
+            <div>
+              <div class="logo">sentiro</div>
+              <div style="font-size:11px;color:#64748b;font-family:monospace;">IT Sentinel • sentiro.xyz</div>
+            </div>
+          </div>
           <div style="text-align:right;">
             <div style="font-size:12px;color:#64748b;">RECEIPT ${inv.invoice_id}</div>
             <span class="badge">PAID</span>
@@ -183,7 +216,7 @@ export default function BillsPage({
         </div>
         <div class="details">
           <div><strong>Date:</strong> ${new Date(inv.created_at).toLocaleDateString()}</div>
-          <div><strong>Payment Method:</strong> ${inv.payment_method} (Bachs)</div>
+          <div><strong>Payment Method:</strong> ${inv.payment_method}</div>
         </div>
         <table>
           <thead><tr><th>Description</th><th style="text-align:right;">Amount (NGN)</th></tr></thead>
@@ -219,12 +252,15 @@ export default function BillsPage({
 
       {/* Top Action Bar: Active Plan Badge & Community Donation Trigger */}
       <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-slate-200/80 dark:border-slate-800">
-        <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-teal-50 dark:bg-teal-950/60 border border-teal-200/80 dark:border-teal-800 text-xs font-mono">
-          <span className="w-2 h-2 rounded-full bg-teal-500 animate-pulse" />
-          <span className="text-slate-600 dark:text-slate-300">Active Plan:</span>
-          <strong className="text-teal-800 dark:text-teal-300">
-            {billing?.active_plan.name || 'Indie Pro'} (₦{billing?.active_plan.price?.toLocaleString() || '2,000'}/mo)
-          </strong>
+        <div className="flex items-center gap-3">
+          <SentiroLogo size="sm" subtitle="Billing & Subscriptions" />
+          <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-teal-50 dark:bg-teal-950/60 border border-teal-200/80 dark:border-teal-800 text-xs font-mono">
+            <span className="w-2 h-2 rounded-full bg-teal-500 animate-pulse" />
+            <span className="text-slate-600 dark:text-slate-300">Active:</span>
+            <strong className="text-teal-800 dark:text-teal-300">
+              {billing?.active_plan.name || 'Indie Pro'}
+            </strong>
+          </div>
         </div>
 
         <button
@@ -236,7 +272,7 @@ export default function BillsPage({
           className="px-3.5 py-2 rounded-xl bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/40 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800/80 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
         >
           <Heart className="w-4 h-4 fill-rose-500 text-rose-500" />
-          <span>Support pingbud.us (Donate)</span>
+          <span>Support sentiro (Donate)</span>
         </button>
       </div>
 
@@ -356,7 +392,7 @@ export default function BillsPage({
                 : 'bg-teal-600 hover:bg-teal-700 text-white cursor-pointer'
             }`}
           >
-            {currentTier === 'indie_pro' ? 'Active' : 'Pay ₦2,000 via Bachs'}
+            {currentTier === 'indie_pro' ? 'Active' : 'Pay ₦2,000 (Instant Transfer)'}
           </button>
         </div>
 
@@ -415,7 +451,7 @@ export default function BillsPage({
                 : 'bg-slate-900 hover:bg-slate-800 dark:bg-slate-800 dark:hover:bg-slate-700 text-white cursor-pointer'
             }`}
           >
-            {currentTier === 'team_pro' ? 'Active' : 'Pay ₦5,000 via Bachs'}
+            {currentTier === 'team_pro' ? 'Active' : 'Pay ₦5,000 (Instant Transfer)'}
           </button>
         </div>
       </div>
@@ -489,7 +525,7 @@ export default function BillsPage({
         )}
       </div>
 
-      {/* Clean Bachs Payment Modal */}
+      {/* Direct Bank Transfer Payment Modal */}
       {checkoutModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm animate-in fade-in duration-150">
           <div className="relative w-full max-w-md rounded-3xl bg-white dark:bg-[#0F172A] border border-slate-200 dark:border-slate-800 shadow-2xl p-6 text-slate-900 dark:text-slate-100">
@@ -519,6 +555,13 @@ export default function BillsPage({
                   Return to Dashboard
                 </button>
               </div>
+            ) : isLoadingCheckout ? (
+              <div className="py-12 flex flex-col items-center justify-center gap-3">
+                <Loader2 className="w-7 h-7 animate-spin text-teal-600" />
+                <span className="text-xs font-mono text-slate-500 dark:text-slate-400">
+                  Initializing Bachs payment session...
+                </span>
+              </div>
             ) : (
               <div className="space-y-5">
                 <div className="flex items-center gap-3">
@@ -527,7 +570,7 @@ export default function BillsPage({
                   </div>
                   <div>
                     <h3 className="text-base font-bold text-slate-900 dark:text-white">
-                      Bachs Checkout
+                      Bachs Subscription Checkout
                     </h3>
                     <p className="text-xs text-slate-500 dark:text-slate-400">
                       {checkoutPlan === 'indie_pro' ? 'Indie Pro' : 'Team Pro'} (₦{checkoutAmount.toLocaleString()}/mo)
@@ -535,35 +578,56 @@ export default function BillsPage({
                   </div>
                 </div>
 
-                {/* Bank Transfer Details */}
-                <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 space-y-2 text-xs">
-                  <div className="flex items-center justify-between text-[11px] font-mono text-slate-400">
+                {/* If hosted checkout URL available from Bachs */}
+                {checkoutSession?.hosted_checkout_url && (
+                  <a
+                    href={checkoutSession.hosted_checkout_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full py-2.5 px-4 rounded-xl bg-teal-600 hover:bg-teal-500 text-white text-xs font-bold transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    <span>Proceed to Bachs Hosted Checkout (Card, Transfer, USSD)</span>
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </a>
+                )}
+
+                {/* Instant Bank Transfer Reconciliation Details */}
+                <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 space-y-2.5 text-xs">
+                  <div className="flex items-center justify-between text-[11px] font-mono text-slate-400 pb-1 border-b border-slate-200/60 dark:border-slate-700/60">
                     <span>Direct Bank Transfer</span>
-                    <span className="text-emerald-600 font-bold">Instant</span>
+                    <span className="text-emerald-600 dark:text-emerald-400 font-bold">Automatic Reconciliation</span>
                   </div>
+
                   <div className="flex items-center justify-between">
                     <span className="text-slate-500">Bank:</span>
-                    <span className="font-semibold text-slate-900 dark:text-white">Providus Bank</span>
+                    <span className="font-semibold text-slate-900 dark:text-white">
+                      {checkoutSession?.virtual_account?.bank_name || 'Providus Bank'}
+                    </span>
                   </div>
+
                   <div className="flex items-center justify-between">
                     <span className="text-slate-500">Account Name:</span>
-                    <span className="font-semibold text-slate-900 dark:text-white">pingbud.us / Bachs</span>
+                    <span className="font-semibold text-slate-900 dark:text-white">
+                      {checkoutSession?.virtual_account?.account_name || 'Sentiro Settlement'}
+                    </span>
                   </div>
-                  <div className="flex items-center justify-between pt-1">
+
+                  <div className="flex items-center justify-between pt-0.5">
                     <span className="text-slate-500">Account Number:</span>
                     <div className="flex items-center gap-1.5">
                       <span className="font-mono font-bold text-teal-700 dark:text-teal-400 text-sm">
-                        9928341029
+                        {checkoutSession?.virtual_account?.account_number || '0129841029'}
                       </span>
                       <button
                         type="button"
                         onClick={() => {
-                          navigator.clipboard.writeText('9928341029');
+                          const acct = checkoutSession?.virtual_account?.account_number || '0129841029';
+                          navigator.clipboard.writeText(acct);
                           setCopiedAccount(true);
                           setTimeout(() => setCopiedAccount(false), 2000);
                         }}
-                        className="p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-700"
-                        title="Copy"
+                        className="p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-700 cursor-pointer"
+                        title="Copy Account Number"
                       >
                         {copiedAccount ? (
                           <Check className="w-3.5 h-3.5 text-emerald-600" />
@@ -573,21 +637,59 @@ export default function BillsPage({
                       </button>
                     </div>
                   </div>
+
+                  {checkoutSession?.reference && (
+                    <div className="flex items-center justify-between pt-0.5 text-[11px]">
+                      <span className="text-slate-500">Session Ref:</span>
+                      <div className="flex items-center gap-1 font-mono text-slate-600 dark:text-slate-300">
+                        <span>{checkoutSession.reference}</span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            navigator.clipboard.writeText(checkoutSession.reference);
+                            setCopiedRef(true);
+                            setTimeout(() => setCopiedRef(false), 2000);
+                          }}
+                          className="p-0.5 rounded hover:bg-slate-200 dark:hover:bg-slate-700 cursor-pointer"
+                          title="Copy Reference"
+                        >
+                          {copiedRef ? (
+                            <Check className="w-3 h-3 text-emerald-600" />
+                          ) : (
+                            <Copy className="w-3 h-3 text-slate-400" />
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="pt-2 border-t border-slate-200/60 dark:border-slate-700/60 flex items-center justify-between text-[10px] font-mono text-slate-400">
+                    <span>Payment Gateway</span>
+                    <a
+                      href="https://docs.bachs.io"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-teal-600 dark:text-teal-400 hover:underline flex items-center gap-1 font-semibold"
+                    >
+                      <span>docs.bachs.io</span>
+                      <ExternalLink className="w-2.5 h-2.5" />
+                    </a>
+                  </div>
                 </div>
 
                 <button
                   type="button"
                   disabled={isProcessingCheckout}
-                  onClick={handleConfirmBachsPayment}
+                  onClick={handleConfirmDirectPayment}
                   className="w-full py-2.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                 >
                   {isProcessingCheckout ? (
                     <>
                       <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                      <span>Verifying Payment...</span>
+                      <span>Reconciling with Bachs...</span>
                     </>
                   ) : (
-                    <span>Confirm ₦{checkoutAmount.toLocaleString()} Payment</span>
+                    <span>Confirm ₦{checkoutAmount.toLocaleString()} Bank Transfer</span>
                   )}
                 </button>
               </div>
@@ -616,10 +718,10 @@ export default function BillsPage({
                   <CheckCircle2 className="w-8 h-8" />
                 </div>
                 <h3 className="text-xl font-bold text-slate-900 dark:text-white">
-                  Thank You for Supporting pingbud.us!
+                  Thank You for Supporting sentiro!
                 </h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400 max-w-xs mx-auto leading-relaxed">
-                  Your contribution directly funds multi-region consensus probing nodes and ensures pingbud.us stays fast, independent, and priced at ₦2,000/mo.
+                  Your contribution directly funds multi-region consensus probing nodes and ensures sentiro stays fast, independent, and priced at ₦2,000/mo.
                 </p>
                 <button
                   type="button"
@@ -640,7 +742,7 @@ export default function BillsPage({
                   </div>
                   <div>
                     <h3 className="text-base font-bold text-slate-900 dark:text-white">
-                      Support pingbud.us
+                      Support sentiro
                     </h3>
                     <p className="text-xs text-slate-500 dark:text-slate-400">
                       Community sponsorship for edge probe consensus nodes
@@ -721,17 +823,17 @@ export default function BillsPage({
                 {/* Providus Direct Bank Transfer Box */}
                 <div className="p-3.5 rounded-2xl bg-rose-50/50 dark:bg-rose-950/20 border border-rose-200/80 dark:border-rose-900/60 space-y-1.5 text-xs">
                   <div className="flex items-center justify-between text-[11px] font-mono text-slate-500">
-                    <span>Direct Bank Transfer (Bachs)</span>
+                    <span>Direct Bank Transfer</span>
                     <span className="text-rose-600 font-bold">Providus Bank</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-slate-500">Account:</span>
                     <div className="flex items-center gap-1.5">
-                      <span className="font-mono font-bold text-slate-900 dark:text-white">9928341029</span>
+                      <span className="font-mono font-bold text-slate-900 dark:text-white">0129841029</span>
                       <button
                         type="button"
                         onClick={() => {
-                          navigator.clipboard.writeText('9928341029');
+                          navigator.clipboard.writeText('0129841029');
                           setCopiedDonationAccount(true);
                           setTimeout(() => setCopiedDonationAccount(false), 2000);
                         }}
@@ -745,6 +847,18 @@ export default function BillsPage({
                         )}
                       </button>
                     </div>
+                  </div>
+                  <div className="pt-1.5 border-t border-rose-200/60 dark:border-rose-900/60 flex items-center justify-between text-[10px] font-mono text-slate-500">
+                    <span>Payment Gateway</span>
+                    <a
+                      href="https://docs.bachs.io"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-rose-600 dark:text-rose-400 hover:underline flex items-center gap-1 font-semibold"
+                    >
+                      <span>docs.bachs.io</span>
+                      <ExternalLink className="w-2.5 h-2.5" />
+                    </a>
                   </div>
                 </div>
 

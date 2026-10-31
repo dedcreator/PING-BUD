@@ -13,6 +13,7 @@ import {
   Zap,
   Crown,
 } from 'lucide-react';
+import SentiroLogo from '@/components/SentiroLogo';
 import {
   loginUser,
   loginWithGoogle,
@@ -44,7 +45,7 @@ const GoogleIcon = () => (
 
 export default function LoginPage() {
   const router = useRouter();
-  const [emailOrUsername, setEmailOrUsername] = useState('indie@pingbud.us');
+  const [emailOrUsername, setEmailOrUsername] = useState('indie@sentiro');
   const [password, setPassword] = useState('password123');
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState<{ text: string; error: boolean } | null>(null);
@@ -189,12 +190,7 @@ export default function LoginPage() {
           href="/"
           className="inline-flex items-center gap-2.5 group transition-transform hover:scale-105"
         >
-          <div className="w-10 h-10 rounded-xl bg-teal-600 text-white flex items-center justify-center shadow-md">
-            <Activity className="w-6 h-6 stroke-[2.2]" />
-          </div>
-          <span className="font-extrabold text-2xl tracking-tight text-slate-900 dark:text-white">
-            pingbud.us
-          </span>
+          <SentiroLogo size="lg" subtitle="The IT Sentinel" />
         </Link>
         <h2 className="mt-4 text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
           Sign in to your Workspace
@@ -345,7 +341,7 @@ export default function LoginPage() {
                   required
                   value={emailOrUsername}
                   onChange={(e) => setEmailOrUsername(e.target.value)}
-                  placeholder="indie@pingbud.us"
+                  placeholder="indie@sentiro"
                   className="w-full px-3.5 py-2 text-xs bg-slate-50 dark:bg-[#16223B] border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500"
                 />
               </div>

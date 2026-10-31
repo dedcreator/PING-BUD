@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { Incident } from '../types';
 import { getIncidentExportUrl } from '../lib/api';
+import SentiroLogo from './SentiroLogo';
 
 interface IncidentsDrawerProps {
   isOpen: boolean;
@@ -45,9 +46,7 @@ export default function IncidentsDrawer({
         {/* Header */}
         <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-red-500/10 text-red-600 dark:text-red-400 flex items-center justify-center">
-              <ShieldAlert className="w-5 h-5 stroke-[2.2]" />
-            </div>
+            <SentiroLogo size="sm" showText={false} />
             <div>
               <h2 className="text-base font-bold text-slate-900 dark:text-white">
                 Incident Timeline & Outage History

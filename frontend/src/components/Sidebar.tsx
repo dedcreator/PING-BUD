@@ -25,8 +25,15 @@ import {
   CheckCircle2,
   X,
   LogOut,
+  Sun,
+  Moon,
+  Sparkles,
+  AlertCircle,
 } from 'lucide-react';
 import { ProPlan, Project, UserRole } from '../types';
+import SentiroLogo from './SentiroLogo';
+import { toggleTheme, getInitialTheme } from '../lib/theme';
+import FeedbackModal, { FeedbackMode } from './FeedbackModal';
 
 export type NavItem =
   | 'dashboard'
@@ -35,7 +42,10 @@ export type NavItem =
   | 'channels'
   | 'maintenance'
   | 'bills'
-  | 'settings';
+  | 'settings'
+  | 'status-page'
+  | 'feature-request'
+  | 'report-issue';
 
 interface SidebarProps {
   currentView: string;
@@ -73,6 +83,19 @@ export default function Sidebar({
   onCloseMobile,
 }: SidebarProps) {
   const [workspaceMenuOpen, setWorkspaceMenuOpen] = useState(false);
+  const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
+  const [feedbackMode, setFeedbackMode] = useState<FeedbackMode>('feature');
+  const [isDark, setIsDark] = useState(true);
+
+  React.useEffect(() => {
+    setIsDark(getInitialTheme() === 'dark');
+    const handler = (e: Event) => {
+      const customEvent = e as CustomEvent<{ theme: 'dark' | 'light' }>;
+      setIsDark(customEvent.detail?.theme === 'dark');
+    };
+    window.addEventListener('sentiro-theme-change', handler);
+    return () => window.removeEventListener('sentiro-theme-change', handler);
+  }, []);
 
   const currentProjectName =
     projects.find((p) => p.slug === activeProjectSlug)?.name ||
@@ -124,13 +147,20 @@ export default function Sidebar({
       group: 'Operations',
       items: [
         {
-          id: 'channels',
+          id: 'status-page' as NavItem,
+          label: 'Status Page',
+          icon: Radio,
+          badge: 'Live',
+          badgeColor: 'bg-teal-500/10 text-teal-600 dark:text-teal-400 border border-teal-500/20',
+        },
+        {
+          id: 'channels' as NavItem,
           label: 'Alert Channels',
           icon: Bell,
           badge: null,
         },
         {
-          id: 'maintenance',
+          id: 'maintenance' as NavItem,
           label: 'Maintenance',
           icon: Calendar,
           badge: null,
@@ -144,12 +174,30 @@ export default function Sidebar({
           id: 'bills',
           label: 'Billing & Invoices',
           icon: Receipt,
-          badge: 'Bachs',
+          badge: 'Pro',
         },
         {
           id: 'settings',
           label: 'Workspace Settings',
           icon: Settings,
+          badge: null,
+        },
+      ],
+    },
+    {
+      group: 'Support & Feedback',
+      items: [
+        {
+          id: 'feature-request',
+          label: 'Request a Feature',
+          icon: Sparkles,
+          badge: 'New',
+          badgeColor: 'bg-teal-500/10 text-teal-600 dark:text-teal-400 border border-teal-500/20',
+        },
+        {
+          id: 'report-issue',
+          label: 'Report an Issue',
+          icon: AlertCircle,
           badge: null,
         },
       ],
@@ -183,26 +231,7 @@ export default function Sidebar({
                 }}
                 className="flex items-center gap-2.5 text-left group"
               >
-                <div
-                  className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${
-                    isOutage
-                      ? 'bg-rose-600 text-white'
-                      : 'bg-teal-600 text-white'
-                  }`}
-                >
-                  <Activity className="w-5 h-5 stroke-[2.2]" />
-                </div>
-                <div>
-                  <div className="font-bold text-sm tracking-tight text-slate-900 dark:text-white flex items-center gap-1.5">
-                    <span>pingbud.us</span>
-                    <span className="text-[10px] font-mono uppercase px-1.5 py-0.2 rounded bg-slate-100 dark:bg-slate-800 text-teal-700 dark:text-teal-300 font-bold border border-slate-200 dark:border-slate-700">
-                      SaaS
-                    </span>
-                  </div>
-                  <div className="text-[11px] text-slate-500 dark:text-slate-400 font-mono">
-                    Zero-Overhead Monitoring
-                  </div>
-                </div>
+                <SentiroLogo size="md" subtitle="sentiro.xyz" />
               </button>
 
               <button
@@ -262,7 +291,7 @@ export default function Sidebar({
                     >
                       <span className="flex items-center gap-1.5">
                         <Plus className="w-3.5 h-3.5" />
-                        <span>Manage / Add Workspace</span>
+                        <span>Manage Workspace</span>
                       </span>
                       <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-600 font-bold border border-amber-500/20">
                         PRO
@@ -306,7 +335,15 @@ export default function Sidebar({
                       <button
                         key={item.id}
                         onClick={() => {
-                          onNavigate(item.id as NavItem);
+                          if (item.id === 'feature-request') {
+                            setFeedbackMode('feature');
+                            setFeedbackModalOpen(true);
+                          } else if (item.id === 'report-issue') {
+                            setFeedbackMode('issue');
+                            setFeedbackModalOpen(true);
+                          } else {
+                            onNavigate(item.id as NavItem);
+                          }
                           onCloseMobile();
                         }}
                         className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-all ${
@@ -326,16 +363,30 @@ export default function Sidebar({
                           <span>{item.label}</span>
                         </div>
                         {item.badge && (
-                          <span
-                            className={`text-[10px] font-mono px-2 py-0.5 rounded-full font-bold border border-slate-200 dark:border-slate-700 ${
-                              item.badgeColor ||
-                              (isActive
-                                ? 'bg-teal-100 dark:bg-teal-900/60 text-teal-700 dark:text-teal-300'
-                                : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400')
-                            }`}
-                          >
-                            {item.badge}
-                          </span>
+                          item.id === 'status-page' ? (
+                            <a
+                              href="/status"
+                              target="_blank"
+                              rel="noreferrer"
+                              onClick={(e) => e.stopPropagation()}
+                              className="text-[10px] font-mono px-2 py-0.5 rounded-full font-bold border border-teal-500/30 bg-teal-500/10 text-teal-600 dark:text-teal-400 hover:bg-teal-500/20 flex items-center gap-1 transition-colors"
+                              title="Open public status page in new tab"
+                            >
+                              <span>Live</span>
+                              <ExternalLink className="w-2.5 h-2.5" />
+                            </a>
+                          ) : (
+                            <span
+                              className={`text-[10px] font-mono px-2 py-0.5 rounded-full font-bold border border-slate-200 dark:border-slate-700 ${
+                                item.badgeColor ||
+                                (isActive
+                                  ? 'bg-teal-100 dark:bg-teal-900/60 text-teal-700 dark:text-teal-300'
+                                  : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400')
+                              }`}
+                            >
+                              {item.badge}
+                            </span>
+                          )
                         )}
                       </button>
                     );
@@ -367,6 +418,22 @@ export default function Sidebar({
               </span>
             </button>
 
+            {/* Dark / Light Mode Toggle Button */}
+            <button
+              onClick={() => {
+                const next = toggleTheme();
+                setIsDark(next === 'dark');
+              }}
+              className="p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700/60 text-slate-600 dark:text-slate-300 transition-colors shrink-0"
+              title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+            >
+              {isDark ? (
+                <Sun className="w-4 h-4 text-amber-400" />
+              ) : (
+                <Moon className="w-4 h-4 text-slate-700" />
+              )}
+            </button>
+
             <button
               onClick={() => {
                 if (typeof window !== 'undefined') {
@@ -381,17 +448,15 @@ export default function Sidebar({
               <LogOut className="w-4 h-4" />
             </button>
           </div>
-
-          {/* System SLA Status Indicator */}
-          <div className="flex items-center justify-between px-2 pt-1 text-xs text-slate-500">
-            <div className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-[11px] font-semibold text-slate-700 dark:text-slate-300">Probes Operational</span>
-            </div>
-            <span className="text-[10px] font-mono font-bold text-teal-600 dark:text-teal-400">99.99% SLA</span>
-          </div>
         </div>
       </aside>
+
+      {/* Feature Request & Issue Reporting Modal */}
+      <FeedbackModal
+        isOpen={feedbackModalOpen}
+        initialMode={feedbackMode}
+        onClose={() => setFeedbackModalOpen(false)}
+      />
     </>
   );
 }

@@ -23,6 +23,8 @@ import ExecutiveDashboardView from '@/components/ExecutiveDashboardView';
 import AlertChannelsPage from '@/components/AlertChannelsPage';
 import MaintenancePage from '@/components/MaintenancePage';
 import IncidentsPage from '@/components/IncidentsPage';
+import StatusPageManager from '@/components/StatusPageManager';
+import { getInitialTheme, applyTheme } from '@/lib/theme';
 import {
   Monitor,
   Incident,
@@ -63,7 +65,8 @@ export type ViewMode =
   | 'channels'
   | 'bills'
   | 'settings'
-  | 'maintenance';
+  | 'maintenance'
+  | 'status-page';
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -119,10 +122,11 @@ export default function DashboardPage() {
     setTimeout(() => setToast(null), 3500);
   };
 
-  // Initial Setup: Enforce Crisp Clean Interface & User Profile
+  // Initial Setup: Theme & User Profile
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      document.documentElement.classList.remove('dark');
+      const theme = getInitialTheme();
+      applyTheme(theme);
     }
 
     fetchCurrentUser().then((data) => {
@@ -272,12 +276,15 @@ export default function DashboardPage() {
       return;
     }
     try {
+      // Optimistic state filter for smooth animated card exit
+      setMonitors((prev) => prev.filter((m) => m.id !== id));
       await deleteMonitor(id);
-      showToast('Monitor deleted.', 'info');
+      showToast('Monitor vaporized successfully.', 'info');
       setSelectedMonitor(null);
-      loadData();
+      loadData(true);
     } catch (err: unknown) {
       showToast(err instanceof Error ? err.message : 'Delete failed', 'error');
+      loadData(true);
     }
   };
 
@@ -286,14 +293,9 @@ export default function DashboardPage() {
       showToast('Permission denied: Viewer role cannot add monitors.', 'error');
       return;
     }
-    try {
-      await createMonitor(data);
-      showToast('Monitor created successfully.', 'success');
-      setIsAddModalOpen(false);
-      loadData();
-    } catch (err: unknown) {
-      showToast(err instanceof Error ? err.message : 'Failed to create monitor', 'error');
-    }
+    await createMonitor(data);
+    showToast('Monitor created successfully.', 'success');
+    loadData();
   };
 
   // Sidebar navigation handler
@@ -305,7 +307,8 @@ export default function DashboardPage() {
       view === 'channels' ||
       view === 'maintenance' ||
       view === 'bills' ||
-      view === 'settings'
+      view === 'settings' ||
+      view === 'status-page'
     ) {
       setViewMode(view);
     }
@@ -333,13 +336,17 @@ export default function DashboardPage() {
     bills: {
       title: 'Billing & Invoices',
     },
+    'status-page': {
+      title: 'Status Page Service',
+      subtitle: 'Public uptime transparency & 90-day SLA dashboard',
+    },
     settings: {
       title: 'Workspace Settings & Team RBAC',
     },
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 flex transition-colors">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#0B1120] text-slate-900 dark:text-slate-100 flex transition-colors">
       {/* Toast Alert */}
       {toast && (
         <div
@@ -418,6 +425,7 @@ export default function DashboardPage() {
               onBackToDashboard={() => setViewMode('dashboard')}
               onGoToBilling={() => setViewMode('bills')}
               userRole={activeRole}
+              proPlan={proPlan}
             />
           )}
 
@@ -437,6 +445,8 @@ export default function DashboardPage() {
               currentUser={currentUser}
               activeRole={activeRole}
               onRoleChanged={handleRoleChanged}
+              proPlan={proPlan}
+              onGoToBilling={() => setViewMode('bills')}
             />
           )}
 
@@ -447,6 +457,15 @@ export default function DashboardPage() {
               monitors={monitors}
               userRole={activeRole}
               onWindowsUpdated={() => loadData(true)}
+            />
+          )}
+
+          {/* 5. ADVANCED STATUS PAGE SERVICE */}
+          {viewMode === 'status-page' && (
+            <StatusPageManager
+              monitors={monitors}
+              canEdit={canEdit}
+              showToast={showToast}
             />
           )}
 
@@ -586,11 +605,13 @@ export default function DashboardPage() {
         </main>
 
         {/* Minimal Clean Dashboard Footer */}
-        <footer className="border-t border-slate-200/80 bg-white/70 py-3.5 px-6 text-xs text-slate-400 flex items-center justify-between gap-2 mt-auto">
+        <footer className="border-t border-slate-200/80 dark:border-slate-800 bg-white/70 dark:bg-[#0B1120]/70 py-3.5 px-6 text-xs text-slate-400 flex items-center justify-between gap-2 mt-auto">
           <div className="flex items-center gap-2">
-            <span className="font-bold text-slate-700">pingbud.us</span>
+            <span className="font-bold text-slate-700 dark:text-slate-200">Sentiro</span>
             <span>•</span>
-            <span>Synthetic Monitoring</span>
+            <span className="font-mono text-teal-600 dark:text-teal-400 font-semibold">sentiro.xyz</span>
+            <span>•</span>
+            <span>The IT Sentinel</span>
           </div>
         </footer>
       </div>

@@ -42,6 +42,7 @@ export default function MonitorCard({
   const [menuOpen, setMenuOpen] = useState(false);
   const [checking, setChecking] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const isDown = monitor.state === 'down';
   const isSuspect = monitor.state === 'suspect';
@@ -79,6 +80,8 @@ export default function MonitorCard({
     <div
       onClick={() => onSelect(monitor)}
       className={`group relative rounded-xl border p-3 sm:p-3.5 transition-all duration-150 cursor-pointer card-3d-tilt ${
+        isDeleting ? 'animate-monitor-delete pointer-events-none' : 'animate-monitor-enter'
+      } ${
         checking ? 'ring-2 ring-teal-500/50 shadow-lg shadow-teal-500/10' : ''
       } ${
         isDown
@@ -200,9 +203,13 @@ export default function MonitorCard({
                   </button>
                 ) : (
                   <button
-                    onClick={() => {
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsDeleting(true);
                       setMenuOpen(false);
-                      onDelete(monitor.id);
+                      setTimeout(() => {
+                        onDelete(monitor.id);
+                      }, 380);
                     }}
                     className="w-full px-3 py-2 text-left bg-red-600 text-white font-semibold flex items-center gap-2"
                   >

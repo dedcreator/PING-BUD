@@ -131,6 +131,11 @@ CSRF_TRUSTED_ORIGINS = [
     'http://127.0.0.1:3000',
     'http://localhost:8000',
     'http://127.0.0.1:8000',
+    'https://sentiro.xyz',
+    'https://*.sentiro.xyz',
+    'http://sentiro.xyz',
+    'https://*.pxxl.app',
+    'https://*.pxxl.pro',
     'https://*.pythonanywhere.com',
     'http://*.pythonanywhere.com',
     'https://*.onrender.com',
@@ -141,12 +146,21 @@ extra_csrf = os.environ.get('CSRF_TRUSTED_ORIGINS', '')
 if extra_csrf:
     CSRF_TRUSTED_ORIGINS.extend([origin.strip() for origin in extra_csrf.split(',') if origin.strip()])
 
+# Bachs Billing Integration (docs.bachs.io)
+BACHS_API_KEY = os.environ.get('BACHS_API_KEY', '')
+BACHS_WEBHOOK_SECRET = os.environ.get('BACHS_WEBHOOK_SECRET', '')
+BACHS_BASE_URL = os.environ.get('BACHS_BASE_URL', 'https://api.bachs.io')
+
+# Telegram Bot Integration (@SentiroAlertBot)
+TELEGRAM_BOT_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN', '')
+
 REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': [
         'rest_framework.renderers.JSONRenderer',
         'rest_framework.renderers.BrowsableAPIRenderer',
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': [
+        'core.authentication.ApiKeyAuthentication',
         'rest_framework.authentication.TokenAuthentication',
         'rest_framework.authentication.SessionAuthentication',
     ],

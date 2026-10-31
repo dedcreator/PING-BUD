@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" fill="none">
+  <!-- Deep Obsidian Shield Disc -->
+  <circle cx="500" cy="500" r="485" fill="#090D16" stroke="#1E293B" stroke-width="12"/>
+  <circle cx="500" cy="500" r="468" fill="none" stroke="#14B8A6" stroke-width="6" opacity="0.6"/>
+
+  <!-- Orbital Consensus Telemetry Arcs (Pure White) -->
+  <path d="M 760 320 C 810 390 835 480 835 560 C 835 630 810 700 770 755 L 735 730 C 770 680 790 620 790 560 C 790 495 770 425 730 365 Z" fill="#F8FAFC"/>
+  <path d="M 240 320 C 190 390 165 480 165 560 C 165 630 190 700 230 755 L 265 730 C 230 680 210 620 210 560 C 210 495 230 425 270 365 Z" fill="#F8FAFC"/>
+
+  <!-- Main Sentinel Helm Body (Pure White) -->
+  <path d="M 500 150 L 560 190 L 620 160 L 595 250 L 680 280 L 720 390 L 710 520 L 660 660 L 590 770 L 500 840 L 410 770 L 340 660 L 290 520 L 280 390 L 320 280 L 405 250 L 380 160 L 440 190 Z" fill="#F8FAFC"/>
+
+  <!-- Forehead Telemetry Sensor Slits (Deep Obsidian Cutouts) -->
+  <path d="M 530 340 L 610 330 L 630 365 L 545 375 Z" fill="#090D16"/>
+  <path d="M 470 340 L 390 330 L 370 365 L 455 375 Z" fill="#090D16"/>
+
+  <!-- Chin Telemetry Vents (Deep Obsidian Cutouts) -->
+  <path d="M 493 630 L 507 630 L 507 720 L 493 720 Z" fill="#090D16"/>
+  <path d="M 535 640 L 550 635 L 565 705 L 550 710 Z" fill="#090D16"/>
+  <path d="M 465 640 L 450 635 L 435 705 L 450 710 Z" fill="#090D16"/>
+
+  <!-- Cyber Visor Aperture (Deep Obsidian Cutout) -->
+  <path d="M 340 470 L 460 485 L 500 495 L 540 485 L 660 470 L 645 520 L 540 540 L 500 550 L 460 540 L 355 520 Z" fill="#090D16"/>
+
+  <!-- Visor Heartbeat Synthetic Ping Wave (Vibrant Teal) -->
+  <path d="M 370 500 L 440 500 L 460 500 L 475 515 L 490 445 L 510 550 L 525 485 L 540 500 L 630 500" stroke="#14B8A6" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Focus ping core diamond -->
+  <polygon points="500,440 508,455 500,470 492,455" fill="#14B8A6"/>
+</svg>

@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from .models import (
     Project, Monitor, Check, Incident, AlertChannel, StatusPost,
     CertInfo, ProSubscription, Donation, UserProfile, ApiKey,
-    MaintenanceWindow, StatusPageConfig, Invoice
+    MaintenanceWindow, StatusPageConfig, Invoice, AuditLog
 )
 from django.utils import timezone
 
@@ -194,3 +194,9 @@ class DonationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Donation
         fields = ['id', 'donor_name', 'amount', 'currency', 'message', 'source', 'created_at']
+
+
+class AuditLogSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AuditLog
+        fields = ['id', 'timestamp', 'actor', 'action', 'category', 'details', 'ip_address', 'status']

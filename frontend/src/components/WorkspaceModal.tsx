@@ -18,6 +18,7 @@ import {
 import { Project, ProPlan, UserRole } from '../types';
 import { createProject, deleteProject } from '../lib/api';
 import ThreeDWorkspaceCluster from './ThreeDWorkspaceCluster';
+import SentiroLogo from './SentiroLogo';
 
 interface WorkspaceModalProps {
   isOpen: boolean;
@@ -122,13 +123,11 @@ export default function WorkspaceModal({
         {/* Header */}
         <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-teal-600/10 text-teal-600 dark:text-teal-400 flex items-center justify-center">
-              <Layers className="w-5 h-5 stroke-[2.2]" />
-            </div>
+            <SentiroLogo size="sm" showText={false} />
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="text-base font-bold text-slate-900 dark:text-white">
-                  Workspaces & Multi-Tenancy
+                  Sentiro Workspaces & Multi-Tenancy
                 </h2>
                 <span className="text-[10px] font-mono px-2 py-0.5 rounded-full font-bold bg-amber-500/10 text-amber-600 border border-amber-500/20">
                   Pro Feature
@@ -255,7 +254,7 @@ export default function WorkspaceModal({
               className="w-full py-2 px-3 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer"
             >
               <Zap className="w-3.5 h-3.5" />
-              <span>Upgrade to Indie Pro (₦2,000/mo via Bachs)</span>
+              <span>Upgrade to Indie Pro (₦2,000/mo)</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </div>

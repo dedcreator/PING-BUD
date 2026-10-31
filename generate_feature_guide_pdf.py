@@ -87,7 +87,7 @@ class NumberedCanvas(canvas.Canvas):
         self.setLineWidth(0.5)
         self.line(45, 38, 8.5 * 72 - 45, 38)
 
-        self.drawString(45, 26, "PulseWatch SRE • Single-Node SQLite WAL (<120MB RAM) • Open Source (MIT) • Bachs ₦2,000/mo")
+        self.drawString(45, 26, "Sentiro SRE • Single-Node SQLite WAL (<120MB RAM) • Open Source (MIT) • ₦2,000/mo")
         page_str = f"Page {self._pageNumber} of {total_pages}"
         self.drawRightString(8.5 * 72 - 45, 26, page_str)
         self.restoreState()
@@ -238,11 +238,11 @@ def build_pdf(filename="PulseWatch_Platform_Feature_Guide.pdf"):
         ],
         [
             Paragraph("<b>Core Engine:</b> Django 5 + SQLite WAL (<120MB RAM, zero DB overhead)", tbl_cell_style),
-            Paragraph("<b>Monetization:</b> Bachs SaaS Gateway (₦2,000 Indie Pro & ₦5,000 Team Pro)", tbl_cell_style),
+            Paragraph("<b>Monetization:</b> Direct Bank & Card Gateway (₦2,000 Indie Pro & ₦5,000 Team Pro)", tbl_cell_style),
         ],
         [
             Paragraph("<b>Open Source:</b> 100% MIT License (Free Self-Hosting)", tbl_cell_style),
-            Paragraph("<b>Live Platform URL:</b> https://pingbud.us (Commercial Cloud)", tbl_cell_style),
+            Paragraph("<b>Live Platform URL:</b> https://sentiro.xyz (Commercial Cloud)", tbl_cell_style),
         ]
     ]
     meta_table = Table(meta_table_data, colWidths=[261, 261])
@@ -267,7 +267,7 @@ def build_pdf(filename="PulseWatch_Platform_Feature_Guide.pdf"):
     story.append(Paragraph("• <b>Single-Process SQLite WAL Engine:</b> Eliminates multi-node PostgreSQL, Redis, or managed timeseries database costs. Utilizes SQLite in Write-Ahead Logging mode (<code>PRAGMA journal_mode=WAL;</code>) with concurrent, lock-free readers. Consumes under 120 MB RAM, easily running on a $2.50/mo VPS or free container tier.", bullet_style))
     story.append(Paragraph("• <b>Zero False Alarm SRE Guarantee:</b> Outages are never declared from a single network hiccup. Multi-step retries with exponential jitter and cross-region consensus probes verify failures before triggering notification channels.", bullet_style))
     story.append(Paragraph("• <b>Free Notification Infrastructure:</b> Integrates native 100% free Telegram Bot alerting and Resend email delivery, keeping monthly communication overhead at zero.", bullet_style))
-    story.append(Paragraph("• <b>Native Nigerian Naira Billing (Bachs Gateway):</b> Overcomes foreign card blocks with instant Providus Bank transfer virtual accounts (<code>9928341029 Providus Bank</code>) and debit card processing.", bullet_style))
+    story.append(Paragraph("• <b>Native Nigerian Naira Billing:</b> Overcomes foreign card blocks with instant Providus Bank transfer virtual accounts (<code>9928341029 Providus Bank</code>) and debit card processing.", bullet_style))
 
     story.append(Spacer(1, 6))
     story.append(Paragraph("2. Platform Module & View Architecture Map", h1_style))
@@ -304,7 +304,7 @@ def build_pdf(filename="PulseWatch_Platform_Feature_Guide.pdf"):
         ],
         [
             Paragraph("<b>Billing & Invoices</b><br/><code>bills view</code>", tbl_cell_bold),
-            Paragraph("Bachs subscription & payment receipts.", tbl_cell_style),
+            Paragraph("Direct subscription & payment receipts.", tbl_cell_style),
             Paragraph("Transparent plans (Community ₦0, Indie Pro ₦2,000/mo, Team Pro ₦5,000/mo), Providus Bank instant virtual account transfer, 1-click printable PDF tax invoices, community donation fund.", tbl_cell_style),
         ],
         [
@@ -606,7 +606,7 @@ def build_pdf(filename="PulseWatch_Platform_Feature_Guide.pdf"):
         [
             Paragraph("<b>👑 Owner</b>", tbl_cell_bold),
             Paragraph("Full Administrative Control", tbl_cell_style),
-            Paragraph("Manage Bachs billing subscriptions, generate/revoke scoped API keys, invite/remove team members, delete monitors, configure quiet hours, trigger SQLite WAL checkpoints.", tbl_cell_style),
+            Paragraph("Manage billing subscriptions, generate/revoke scoped API keys, invite/remove team members, delete monitors, configure quiet hours, trigger SQLite WAL checkpoints.", tbl_cell_style),
             Paragraph("None (super-administrator).", tbl_cell_style),
         ],
         [
@@ -641,9 +641,9 @@ def build_pdf(filename="PulseWatch_Platform_Feature_Guide.pdf"):
     story.append(Paragraph("• <b>Developer API Keys:</b> Generate scoped API tokens (<code>read</code>, <code>write</code>, <code>admin</code>) for Terraform, GitHub Actions, or automated probe provisioning with standard <code>Authorization: Token &lt;key&gt;</code> headers.", bullet_style))
 
     story.append(Spacer(1, 6))
-    story.append(Paragraph("9. Billing, Bachs SaaS Gateway & Community Sponsorship", h1_style))
+    story.append(Paragraph("9. Billing, Instant Bank Transfer & Community Sponsorship", h1_style))
     story.append(Paragraph(
-        "PulseWatch breaks the foreign exchange barrier with native <b>Nigerian Naira (NGN)</b> pricing powered by <b>Bachs (bachs.io)</b>:",
+        "Sentiro breaks the foreign exchange barrier with native <b>Nigerian Naira (NGN)</b> pricing powered by direct bank transfer and card settlement:",
         body_style
     ))
 
@@ -686,9 +686,9 @@ def build_pdf(filename="PulseWatch_Platform_Feature_Guide.pdf"):
     story.append(pricing_table)
 
     story.append(Spacer(1, 6))
-    story.append(Paragraph("Bachs Checkout, Printable Invoices & Community Sponsorship", h2_style))
+    story.append(Paragraph("Direct Checkout, Printable Invoices & Community Sponsorship", h2_style))
     story.append(Paragraph("• <b>Providus Bank Transfer:</b> Instant virtual account transfer (Account: <code>9928341029 Providus Bank</code>). Automatically upgrades the workspace the moment the transfer is confirmed.", bullet_style))
-    story.append(Paragraph("• <b>Debit Card Processing:</b> Seamless debit card checkout via Bachs with 1-click renewal.", bullet_style))
+    story.append(Paragraph("• <b>Debit Card Processing:</b> Seamless debit card checkout with 1-click renewal.", bullet_style))
     story.append(Paragraph("• <b>Printable Tax Invoices:</b> Every billing event produces an official, printable PDF tax invoice (e.g. <code>INV-2026-9403</code>) for enterprise accounting and tax audits.", bullet_style))
     story.append(Paragraph("• <b>Open-Source Community Sponsorship:</b> A dedicated donation modal allows community members to sponsor edge probe infrastructure with presets (₦1k, ₦2k, ₦5k, ₦10k) or custom contributions.", bullet_style))
 
@@ -799,8 +799,8 @@ def build_pdf(filename="PulseWatch_Platform_Feature_Guide.pdf"):
             Paragraph("Dispatches cryptographic password reset token via Resend.", tbl_cell_style),
         ],
         [
-            Paragraph("<b>Bachs Checkout Session</b>", tbl_cell_bold),
-            Paragraph("<code>POST /api/bachs/checkout/</code>", tbl_cell_style),
+            Paragraph("<b>Direct Checkout Session</b>", tbl_cell_bold),
+            Paragraph("<code>POST /api/billing/checkout/</code>", tbl_cell_style),
             Paragraph("Generates Providus Bank transfer account and card checkout session.", tbl_cell_style),
         ],
     ]
@@ -818,11 +818,11 @@ def build_pdf(filename="PulseWatch_Platform_Feature_Guide.pdf"):
 
     story.append(Spacer(1, 6))
     story.append(callout_box(
-        "<b>System Summary & Production Sign-Off:</b> PulseWatch delivers the highest reliability-to-cost ratio in synthetic monitoring. "
+        "<b>System Summary & Production Sign-Off:</b> Sentiro delivers the highest reliability-to-cost ratio in synthetic monitoring. "
         "With single-node SQLite WAL performance (<120MB RAM), free Telegram Bot and Resend email alerts, automated AI root-cause analysis, "
-        "and Bachs Nigerian Naira pricing (₦2,000/mo), it provides world-class SRE infrastructure accessible to everyone. "
-        "Source code and updates available at https://pingbud.us.",
-        bg_color=EMERALD_BG, border_color=EMERALD, title="PULSEWATCH RELEASE 2.0 • PRODUCTION READY"
+        "and Nigerian Naira pricing (₦2,000/mo), it provides world-class SRE infrastructure accessible to everyone. "
+        "Source code and updates available at https://sentiro.xyz.",
+        bg_color=EMERALD_BG, border_color=EMERALD, title="SENTIRO RELEASE • PRODUCTION READY"
     ))
 
     # Build the document

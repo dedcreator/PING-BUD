@@ -12,6 +12,7 @@ import {
   ArrowRight,
 } from 'lucide-react';
 import { Monitor } from '../types';
+import SentiroLogo from './SentiroLogo';
 
 interface CommandPaletteProps {
   isOpen: boolean;
@@ -153,7 +154,10 @@ export default function CommandPalette({
 
         {/* Footer */}
         <div className="px-4 py-2 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-[#16223B] flex items-center justify-between text-[11px] text-slate-400 font-mono">
-          <span>pingbud.us Command Palette</span>
+          <div className="flex items-center gap-2">
+            <SentiroLogo size="xs" showText={false} />
+            <span>Sentiro Quick Ops</span>
+          </div>
           <span>Press <kbd className="px-1 py-0.5 rounded bg-slate-200 dark:bg-slate-700">Cmd+K</kbd> anytime</span>
         </div>
       </div>

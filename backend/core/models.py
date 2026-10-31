@@ -370,3 +370,28 @@ class Donation(models.Model):
 
     def __str__(self):
         return f"₦{self.amount} from {self.donor_name}"
+
+
+class AuditLog(models.Model):
+    ACTION_CATEGORIES = [
+        ('auth', 'Authentication'),
+        ('monitor', 'Monitor Infrastructure'),
+        ('settings', 'Workspace Settings'),
+        ('security', 'Security & Keys'),
+        ('compliance', 'Compliance & Retention'),
+        ('billing', 'Billing & Plan'),
+    ]
+
+    timestamp = models.DateTimeField(auto_now_add=True)
+    actor = models.CharField(max_length=150, default='system')
+    action = models.CharField(max_length=64)
+    category = models.CharField(max_length=32, choices=ACTION_CATEGORIES, default='security')
+    details = models.TextField()
+    ip_address = models.CharField(max_length=64, default='127.0.0.1')
+    status = models.CharField(max_length=32, default='success')
+
+    class Meta:
+        ordering = ['-timestamp']
+
+    def __str__(self):
+        return f"[{self.timestamp.strftime('%Y-%m-%d %H:%M:%S')}] {self.actor} - {self.action} ({self.status})"

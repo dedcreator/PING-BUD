@@ -10,6 +10,9 @@ urlpatterns = [
     path('api/auth/forgot-password/', api_views.auth_forgot_password, name='api_auth_forgot_password'),
     path('api/auth/reset-password/', api_views.auth_reset_password, name='api_auth_reset_password'),
     path('api/auth/me/', api_views.auth_me, name='api_auth_me'),
+    path('api/auth/totp/setup/', api_views.totp_setup, name='api_totp_setup'),
+    path('api/auth/totp/verify/', api_views.totp_verify_activate, name='api_totp_verify'),
+    path('api/auth/totp/disable/', api_views.totp_disable, name='api_totp_disable'),
     path('api/auth/role-switch/', api_views.auth_switch_role, name='api_auth_switch_role'),
     path('api/auth/demo-user/', api_views.demo_switch_tier_user, name='api_demo_switch_user'),
     path('api/email/test/', api_views.send_test_email, name='api_send_test_email'),
@@ -51,13 +54,18 @@ urlpatterns = [
     
     # Status Page & Branding Config
     path('api/status-page/config/', api_views.status_page_config, name='api_status_page_config'),
+    path('api/status-page/subscribe/', api_views.subscribe_status_page, name='api_status_page_subscribe'),
+    path('api/status-page/badge.svg', api_views.status_badge_svg, name='api_status_badge_svg'),
+    path('api/status-page/posts/', api_views.status_page_posts, name='api_status_page_posts'),
     path('api/status-page/', api_views.public_status_page, name='api_status_page'),
     path('api/status-page/<slug:slug>/', api_views.public_status_page, name='api_status_page_slug'),
     
-    # Pro Plan, Bachs (bachs.io) Billing & Invoices
+    # Pro Plan, Instant Bank Billing & Invoices
     path('api/pro/', api_views.pro_info_and_checkout, name='api_pro_info_and_checkout'),
     path('api/billing/', api_views.billing_overview, name='api_billing_overview'),
+    path('api/billing/checkout/', api_views.bachs_create_checkout, name='api_direct_checkout'),
     path('api/billing/bachs-checkout/', api_views.bachs_create_checkout, name='api_bachs_checkout'),
+    path('api/billing/webhook/', api_views.bachs_webhook, name='api_direct_webhook'),
     path('api/billing/bachs-webhook/', api_views.bachs_webhook, name='api_bachs_webhook'),
     
     # Prometheus Metrics & SVG Badge
@@ -66,4 +74,11 @@ urlpatterns = [
 
     # Cron Heartbeat
     path('hb/<str:token>/', api_views.heartbeat_ping, name='api_heartbeat_ping'),
+
+    # Security & Compliance Audit Logs
+    path('api/audit-logs/export/', api_views.audit_logs_export, name='api_audit_logs_export'),
+    path('api/audit-logs/', api_views.audit_logs_list, name='api_audit_logs'),
+
+    # Feedback & Issue Reporting
+    path('api/feedback/', api_views.api_submit_feedback, name='api_submit_feedback'),
 ]

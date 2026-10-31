@@ -21,20 +21,25 @@ import {
   Heart,
   ArrowRight,
   Sparkles,
+  Lock,
+  Crown,
 } from 'lucide-react';
-import { AlertChannel, UserRole } from '../types';
+import { AlertChannel, UserRole, ProPlan } from '../types';
 import { fetchChannels, createChannel, updateChannel, deleteChannel, testChannel } from '../lib/api';
+import SentiroLogo from './SentiroLogo';
 
 interface AlertChannelsPageProps {
   onBackToDashboard?: () => void;
   onGoToBilling?: () => void;
   userRole?: UserRole;
+  proPlan?: ProPlan | null;
 }
 
 export default function AlertChannelsPage({
   onBackToDashboard,
   onGoToBilling,
   userRole = 'owner',
+  proPlan,
 }: AlertChannelsPageProps) {
   const [channels, setChannels] = useState<AlertChannel[]>([]);
   const [loading, setLoading] = useState(true);
@@ -46,16 +51,24 @@ export default function AlertChannelsPage({
   const [guideOpen, setGuideOpen] = useState(false);
 
   // New Channel Form State
-  const [newKind, setNewKind] = useState<'telegram' | 'email' | 'slack' | 'discord' | 'webhook'>('telegram');
+  const [newKind, setNewKind] = useState<'telegram' | 'email' | 'slack' | 'discord' | 'webhook'>('email');
   const [newName, setNewName] = useState('');
   const [newEmail, setNewEmail] = useState('');
   const [newTgToken, setNewTgToken] = useState('');
   const [newTgChatId, setNewTgChatId] = useState('');
   const [newWebhookUrl, setNewWebhookUrl] = useState('');
   const [newSecretKey, setNewSecretKey] = useState('');
+  const [showCustomTgToken, setShowCustomTgToken] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const canEdit = userRole === 'owner' || userRole === 'editor';
+  const currentTier = (proPlan?.is_active ? proPlan?.active_tier : 'community') || 'community';
+  const isTeamPro = currentTier === 'team_pro';
+  const isIndiePro = currentTier === 'indie_pro';
+  const isPro = Boolean(proPlan?.is_active && (isIndiePro || isTeamPro));
+
+  const maxChannels = currentTier === 'community' ? 2 : (currentTier === 'indie_pro' ? 5 : 25);
+  const isLimitReached = channels.length >= maxChannels;
 
   const showToast = (msg: string, type: 'success' | 'error' = 'success') => {
     setToast({ msg, type });
@@ -132,6 +145,18 @@ export default function AlertChannelsPage({
       showToast('Viewer role cannot create channels.', 'error');
       return;
     }
+    if (isLimitReached) {
+      showToast(`Channel limit reached (${channels.length}/${maxChannels}) for your current tier. Please upgrade in Billing.`, 'error');
+      return;
+    }
+    if (newKind === 'telegram' && !isPro) {
+      showToast('Telegram bot incident alerts require an Indie Pro (₦2,000/mo) or Team Pro plan. Please upgrade in Billing.', 'error');
+      return;
+    }
+    if (['slack', 'discord', 'webhook'].includes(newKind) && !isTeamPro) {
+      showToast(`${newKind.toUpperCase()} webhook dispatch is exclusive to Team Pro (₦5,000/mo). Upgrade in Billing.`, 'error');
+      return;
+    }
     if (!newName.trim()) {
       showToast('Please provide a channel name.', 'error');
       return;
@@ -139,13 +164,18 @@ export default function AlertChannelsPage({
 
     let config: Record<string, string> = {};
     if (newKind === 'telegram') {
-      if (!newTgToken.trim() || !newTgChatId.trim()) {
-        showToast('Bot token and Chat ID are required for Telegram.', 'error');
+      if (!newTgChatId.trim()) {
+        showToast('Telegram Chat ID is required.', 'error');
+        return;
+      }
+      if (newTgToken.trim() && !isPro) {
+        showToast('Custom bot tokens are an Indie Pro & Team Pro feature. Please upgrade your plan or clear the custom token.', 'error');
         return;
       }
       config = {
-        bot_token: newTgToken.trim(),
         chat_id: newTgChatId.trim(),
+        bot_username: '@SentiroAlertBot',
+        bot_token: isPro ? newTgToken.trim() : '',
       };
     } else if (newKind === 'email') {
       if (!newEmail.trim()) {
@@ -239,18 +269,32 @@ export default function AlertChannelsPage({
         </div>
       )}
 
-      {/* Top Action Bar */}
+      {/* Top Action Bar with Tier Limit Status */}
       <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-200/80 dark:border-slate-800">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
             Configured Channels
           </span>
           <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
-            {channels.length} Total
+            {channels.length} / {maxChannels} Used
           </span>
+          <span className={`text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded-full border ${
+            isTeamPro
+              ? 'bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800'
+              : isIndiePro
+              ? 'bg-teal-50 dark:bg-teal-950/40 text-teal-700 dark:text-teal-300 border-teal-200 dark:border-teal-800'
+              : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700'
+          }`}>
+            {currentTier === 'team_pro' ? 'Team Pro (25 Max)' : currentTier === 'indie_pro' ? 'Indie Pro (5 Max)' : 'Community Free (2 Max)'}
+          </span>
+          {isLimitReached && (
+            <span className="text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">
+              Tier Limit Reached
+            </span>
+          )}
         </div>
 
-        <div className="flex items-center gap-2.5 shrink-0">
+        <div className="flex items-center gap-2.5 shrink-0 flex-wrap">
           <button
             type="button"
             onClick={() => setGuideOpen(!guideOpen)}
@@ -260,11 +304,33 @@ export default function AlertChannelsPage({
             <span>Telegram Bot Setup Guide</span>
           </button>
 
+          {isLimitReached && onGoToBilling && (
+            <button
+              type="button"
+              onClick={onGoToBilling}
+              className="px-3.5 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/30 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
+            >
+              <Crown className="w-3.5 h-3.5 text-amber-500" />
+              <span>Upgrade for More Channels</span>
+            </button>
+          )}
+
           {canEdit && (
             <button
               type="button"
-              onClick={() => setIsAddModalOpen(true)}
-              className="px-3.5 py-1.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold transition-all shadow-sm flex items-center gap-1.5 cursor-pointer"
+              onClick={() => {
+                if (isLimitReached) {
+                  showToast(`Channel limit reached (${channels.length}/${maxChannels}). Please upgrade your workspace tier in Billing to add more.`, 'error');
+                  if (onGoToBilling) onGoToBilling();
+                  return;
+                }
+                setIsAddModalOpen(true);
+              }}
+              className={`px-3.5 py-1.5 rounded-xl text-white text-xs font-bold transition-all shadow-sm flex items-center gap-1.5 cursor-pointer ${
+                isLimitReached
+                  ? 'bg-slate-400 dark:bg-slate-700 hover:bg-slate-500'
+                  : 'bg-teal-600 hover:bg-teal-700'
+              }`}
             >
               <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
               <span>Configure New Channel</span>
@@ -273,37 +339,37 @@ export default function AlertChannelsPage({
         </div>
       </div>
 
-      {/* Telegram Free Bot Guide Accordion */}
+      {/* Telegram Pro Bot Guide Accordion */}
       {guideOpen && (
         <div className="p-5 rounded-2xl border border-teal-200 dark:border-teal-800 bg-teal-50/40 dark:bg-teal-950/20 text-slate-800 dark:text-slate-200 text-xs space-y-3">
           <div className="flex items-center justify-between">
             <span className="font-bold flex items-center gap-2 text-teal-800 dark:text-teal-300">
               <Send className="w-4 h-4 text-cyan-600" />
-              <span>How to setup free Telegram alerts in 2 minutes</span>
+              <span>Telegram Bot Alerts Guide (Indie Pro &amp; Team Pro)</span>
             </span>
             <button
               type="button"
               onClick={() => setGuideOpen(false)}
-              className="text-slate-400 hover:text-slate-600 text-xs font-semibold"
+              className="text-slate-400 hover:text-slate-600 text-xs font-semibold cursor-pointer"
             >
               Close
             </button>
           </div>
           <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
-            Telegram bots have <strong>zero per-message fees</strong>, unlike WhatsApp or SMS. Follow these simple steps:
+            Telegram alerts are powered by our official <strong>@SentiroAlertBot</strong> or your company private bot with <strong>zero per-message carrier fees</strong> for Pro subscribers. Follow these simple steps:
           </p>
           <ol className="list-decimal list-inside space-y-1.5 text-slate-700 dark:text-slate-300">
             <li>
-              Open Telegram and search for <a href="https://t.me/BotFather" target="_blank" rel="noreferrer" className="underline text-teal-700 dark:text-teal-400 font-semibold">@BotFather</a>.
+              Open Telegram and search for <a href="https://t.me/SentiroAlertBot" target="_blank" rel="noreferrer" className="underline text-teal-700 dark:text-teal-400 font-semibold">@SentiroAlertBot</a> (or click <a href="https://t.me/SentiroAlertBot" target="_blank" rel="noreferrer" className="underline text-teal-700 dark:text-teal-400 font-semibold">t.me/SentiroAlertBot</a>).
             </li>
             <li>
-              Send <code>/newbot</code>, give your bot a name (e.g. <code>MyCompany PingBud Alert Bot</code>), and copy the HTTP API Token.
+              Click <strong>Start</strong> (or add <code>@SentiroAlertBot</code> to your engineering team group or incident channel).
             </li>
             <li>
-              Create a Telegram group with your engineering team, add your new bot to it, and obtain your Chat ID (e.g. using <code>@userinfobot</code> or sending a message).
+              Obtain your Chat ID (e.g. from <a href="https://t.me/userinfobot" target="_blank" rel="noreferrer" className="underline text-teal-700 dark:text-teal-400">@userinfobot</a>, or use your public channel handle like <code>@my_sre_alerts</code>).
             </li>
             <li>
-              Paste the Bot Token & Chat ID below and click <strong>Test Ping</strong>. Incident notifications will arrive in milliseconds!
+              Enter your <strong>Chat ID</strong> below and click <strong>Test Ping</strong>. Incident notifications will arrive in milliseconds!
             </li>
           </ol>
         </div>
@@ -323,12 +389,12 @@ export default function AlertChannelsPage({
         </div>
 
         <div className="p-4 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#111A2E] shadow-sm">
-          <div className="text-[11px] font-mono uppercase text-slate-400 mb-1">Telegram & Email Cost</div>
+          <div className="text-[11px] font-mono uppercase text-slate-400 mb-1">Dispatch Reliability SLA</div>
           <div className="text-2xl font-black text-teal-600 dark:text-teal-400 font-mono">
-            ₦0.00 <span className="text-xs text-slate-400 font-normal">Free Forever</span>
+            99.99% <span className="text-xs text-slate-400 font-normal">Guaranteed</span>
           </div>
           <div className="text-[10px] text-slate-500 mt-1 font-mono">
-            Zero carrier SMS or WhatsApp markups
+            Sub-second P1 consensus broadcast fanout
           </div>
         </div>
 
@@ -428,12 +494,12 @@ export default function AlertChannelsPage({
                     <div className="text-xs text-slate-500 dark:text-slate-400 font-mono mt-1 truncate">
                       {chan.kind === 'telegram' && (
                         <span>
-                          Telegram Chat: {chan.config?.chat_id || '@PingBudAlertBot'} • Bot Token Configured
+                          Telegram Chat: {chan.config?.chat_id || '@SentiroAlertBot'} • Bot Token Configured
                         </span>
                       )}
                       {chan.kind === 'email' && (
                         <span>
-                          Recipients: {chan.config?.recipients || chan.config?.email || 'ops@pingbud.us'}
+                          Recipients: {chan.config?.recipients || chan.config?.email || 'ops@sentiro'}
                         </span>
                       )}
                       {(chan.kind === 'slack' || chan.kind === 'discord') && (
@@ -519,7 +585,7 @@ export default function AlertChannelsPage({
         )}
       </div>
 
-      {/* DONATE TO KEEP PINGBUD.US CHEAP BANNER */}
+      {/* DONATE TO KEEP PIPBUD.US CHEAP BANNER */}
       <div className="p-6 rounded-2xl border border-teal-200 dark:border-teal-800 bg-white dark:bg-[#111A2E] shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-start gap-3.5 max-w-2xl">
           <div className="w-10 h-10 rounded-xl bg-teal-600/10 text-teal-600 flex items-center justify-center shrink-0">
@@ -527,13 +593,13 @@ export default function AlertChannelsPage({
           </div>
           <div>
             <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-              <span>Donate to keep pingbud.us cheap</span>
+              <span>Donate to keep sentiro cheap</span>
               <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-teal-50 dark:bg-teal-950/60 text-teal-700 dark:text-teal-300 font-bold border border-teal-200 dark:border-teal-800">
                 Community Backed
               </span>
             </h3>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
-              pingbud.us is engineered to replace $80/mo (₦120,000/mo) legacy providers at just <strong>₦2,000/month</strong>. By utilizing Telegram Bots and single-node SQLite WAL, our overhead is minimal. Support our edge probe servers with a community donation!
+              sentiro is engineered to replace $80/mo (₦120,000/mo) legacy providers at just <strong>₦2,000/month</strong>. By utilizing Telegram Bots and single-node SQLite WAL, our overhead is minimal. Support our edge probe servers with a community donation!
             </p>
           </div>
         </div>
@@ -544,7 +610,7 @@ export default function AlertChannelsPage({
           className="px-4 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold transition-all shadow-sm shrink-0 flex items-center gap-2"
         >
           <Heart className="w-3.5 h-3.5 fill-white" />
-          <span>Sponsor Infrastructure via Bachs</span>
+          <span>Sponsor SRE Infrastructure</span>
           <ArrowRight className="w-3.5 h-3.5" />
         </button>
       </div>
@@ -586,17 +652,29 @@ export default function AlertChannelsPage({
                   <button
                     type="button"
                     onClick={() => {
+                      if (!isPro) {
+                        showToast('Telegram bot incident alerts require an Indie Pro (₦2,000/mo) or Team Pro plan. Upgrade in Billing.', 'error');
+                        return;
+                      }
                       setNewKind('telegram');
                       setNewName('Telegram Incident Bot');
                     }}
-                    className={`p-2.5 rounded-xl border text-xs font-semibold flex flex-col items-center gap-1 transition-all ${
+                    className={`p-2.5 rounded-xl border text-xs font-semibold flex flex-col items-center gap-1 transition-all relative ${
                       newKind === 'telegram'
                         ? 'border-teal-600 bg-teal-50 dark:bg-teal-950/40 text-teal-700 dark:text-teal-300 shadow-sm'
                         : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
-                    }`}
+                    } ${!isPro ? 'opacity-80' : ''}`}
                   >
-                    <Send className="w-4 h-4 text-cyan-600" />
-                    <span>Telegram (Free)</span>
+                    <div className="flex items-center gap-1">
+                      <Send className="w-4 h-4 text-cyan-600" />
+                      {!isPro && <Lock className="w-2.5 h-2.5 text-amber-500" />}
+                    </div>
+                    <span>Telegram Bot</span>
+                    {!isPro && (
+                      <span className="text-[9px] font-mono font-bold uppercase px-1 rounded bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-400">
+                        Pro Only
+                      </span>
+                    )}
                   </button>
 
                   <button
@@ -613,54 +691,93 @@ export default function AlertChannelsPage({
                   >
                     <Mail className="w-4 h-4 text-sky-600" />
                     <span>Email Dispatch</span>
+                    <span className="text-[9px] font-mono font-bold uppercase px-1 rounded bg-slate-100 dark:bg-slate-800 text-slate-500">
+                      Free &amp; Pro
+                    </span>
                   </button>
 
                   <button
                     type="button"
                     onClick={() => {
+                      if (!isTeamPro) {
+                        showToast('Slack webhook alerts require Team Pro tier (₦5,000/mo). Upgrade in Billing to unlock.', 'error');
+                        return;
+                      }
                       setNewKind('slack');
                       setNewName('Slack Alerts Channel');
                     }}
-                    className={`p-2.5 rounded-xl border text-xs font-semibold flex flex-col items-center gap-1 transition-all ${
+                    className={`p-2.5 rounded-xl border text-xs font-semibold flex flex-col items-center gap-1 transition-all relative ${
                       newKind === 'slack'
                         ? 'border-teal-600 bg-teal-50 dark:bg-teal-950/40 text-teal-700 dark:text-teal-300 shadow-sm'
                         : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
-                    }`}
+                    } ${!isTeamPro ? 'opacity-80' : ''}`}
                   >
-                    <MessageSquare className="w-4 h-4 text-emerald-600" />
+                    <div className="flex items-center gap-1">
+                      <MessageSquare className="w-4 h-4 text-emerald-600" />
+                      {!isTeamPro && <Lock className="w-2.5 h-2.5 text-amber-500" />}
+                    </div>
                     <span>Slack Webhook</span>
+                    {!isTeamPro && (
+                      <span className="text-[9px] font-mono font-bold uppercase px-1 rounded bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-400">
+                        Team Pro
+                      </span>
+                    )}
                   </button>
 
                   <button
                     type="button"
                     onClick={() => {
+                      if (!isTeamPro) {
+                        showToast('Discord webhook alerts require Team Pro tier (₦5,000/mo). Upgrade in Billing to unlock.', 'error');
+                        return;
+                      }
                       setNewKind('discord');
                       setNewName('Discord Incident Room');
                     }}
-                    className={`p-2.5 rounded-xl border text-xs font-semibold flex flex-col items-center gap-1 transition-all ${
+                    className={`p-2.5 rounded-xl border text-xs font-semibold flex flex-col items-center gap-1 transition-all relative ${
                       newKind === 'discord'
                         ? 'border-teal-600 bg-teal-50 dark:bg-teal-950/40 text-teal-700 dark:text-teal-300 shadow-sm'
                         : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
-                    }`}
+                    } ${!isTeamPro ? 'opacity-80' : ''}`}
                   >
-                    <MessageSquare className="w-4 h-4 text-indigo-600" />
+                    <div className="flex items-center gap-1">
+                      <MessageSquare className="w-4 h-4 text-indigo-600" />
+                      {!isTeamPro && <Lock className="w-2.5 h-2.5 text-amber-500" />}
+                    </div>
                     <span>Discord</span>
+                    {!isTeamPro && (
+                      <span className="text-[9px] font-mono font-bold uppercase px-1 rounded bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-400">
+                        Team Pro
+                      </span>
+                    )}
                   </button>
 
                   <button
                     type="button"
                     onClick={() => {
+                      if (!isTeamPro) {
+                        showToast('Custom HTTP Webhook dispatch requires Team Pro tier (₦5,000/mo). Upgrade in Billing to unlock.', 'error');
+                        return;
+                      }
                       setNewKind('webhook');
                       setNewName('Custom HTTP Webhook');
                     }}
-                    className={`p-2.5 rounded-xl border text-xs font-semibold flex flex-col items-center gap-1 transition-all col-span-2 ${
+                    className={`p-2.5 rounded-xl border text-xs font-semibold flex flex-col items-center gap-1 transition-all col-span-2 relative ${
                       newKind === 'webhook'
                         ? 'border-teal-600 bg-teal-50 dark:bg-teal-950/40 text-teal-700 dark:text-teal-300 shadow-sm'
                         : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
-                    }`}
+                    } ${!isTeamPro ? 'opacity-80' : ''}`}
                   >
-                    <Webhook className="w-4 h-4 text-teal-600" />
+                    <div className="flex items-center gap-1">
+                      <Webhook className="w-4 h-4 text-teal-600" />
+                      {!isTeamPro && <Lock className="w-2.5 h-2.5 text-amber-500" />}
+                    </div>
                     <span>Custom HTTP POST Webhook</span>
+                    {!isTeamPro && (
+                      <span className="text-[9px] font-mono font-bold uppercase px-1 rounded bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-400">
+                        Team Pro Only
+                      </span>
+                    )}
                   </button>
                 </div>
               </div>
@@ -683,35 +800,102 @@ export default function AlertChannelsPage({
               {/* Dynamic Type Config Fields */}
               {newKind === 'telegram' && (
                 <div className="space-y-3 p-3.5 rounded-xl border border-teal-200 dark:border-teal-800 bg-teal-50/30 dark:bg-teal-950/20">
-                  <div>
-                    <label className="block text-xs font-mono font-semibold text-slate-700 dark:text-slate-300 uppercase mb-1">
-                      Telegram Bot Token
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={newTgToken}
-                      onChange={(e) => setNewTgToken(e.target.value)}
-                      placeholder="e.g. 123456789:ABCdefGHIjklMNOpqrsTUVwxyz"
-                      className="w-full px-3 py-2 text-xs bg-white dark:bg-[#111A2E] border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 font-mono"
-                    />
-                    <p className="text-[10px] text-slate-500 mt-1">
-                      Obtained from <a href="https://t.me/BotFather" target="_blank" rel="noreferrer" className="underline text-teal-600">@BotFather</a>.
-                    </p>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-mono text-teal-800 dark:text-teal-300 font-bold flex items-center gap-2">
+                      <SentiroLogo size="xs" showText={false} />
+                      <span>Official Bot: @SentiroAlertBot</span>
+                    </span>
+                    <a
+                      href="https://t.me/SentiroAlertBot"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-[10px] text-teal-600 dark:text-teal-400 font-semibold underline"
+                    >
+                      Open Bot ↗
+                    </a>
                   </div>
 
                   <div>
                     <label className="block text-xs font-mono font-semibold text-slate-700 dark:text-slate-300 uppercase mb-1">
-                      Target Chat ID or Channel (@channelname)
+                      Telegram Chat ID or Group ID
                     </label>
                     <input
                       type="text"
                       required
                       value={newTgChatId}
                       onChange={(e) => setNewTgChatId(e.target.value)}
-                      placeholder="e.g. @sre_alert_room or -1001234567890"
+                      placeholder="e.g. 123456789 or -1001234567890 or @sre_alerts"
                       className="w-full px-3 py-2 text-xs bg-white dark:bg-[#111A2E] border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 font-mono"
                     />
+                    <p className="text-[10px] text-slate-500 mt-1">
+                      Start <a href="https://t.me/SentiroAlertBot" target="_blank" rel="noreferrer" className="underline text-teal-600">@SentiroAlertBot</a> or add it to your team group, then paste your Chat ID here. Free for all plans!
+                    </p>
+                  </div>
+
+                  {/* Custom Bot Token (Pro Exclusive) */}
+                  <div className="pt-2 border-t border-teal-200/60 dark:border-teal-800/60 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <button
+                        type="button"
+                        onClick={() => setShowCustomTgToken(!showCustomTgToken)}
+                        className="text-[11px] text-teal-700 dark:text-teal-300 font-semibold flex items-center gap-1.5 hover:underline cursor-pointer"
+                      >
+                        {isPro ? (
+                          <Crown className="w-3.5 h-3.5 text-amber-500" />
+                        ) : (
+                          <Lock className="w-3.5 h-3.5 text-slate-400" />
+                        )}
+                        <span>{showCustomTgToken ? '− Hide Custom Bot Token' : '+ Use Custom Bot Token'}</span>
+                      </button>
+                      <span className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded uppercase border ${
+                        isPro
+                          ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800'
+                          : 'bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800'
+                      }`}>
+                        {isPro ? 'Pro Active' : 'Pro Required'}
+                      </span>
+                    </div>
+
+                    {showCustomTgToken && (
+                      <div className="p-3 rounded-xl bg-white/70 dark:bg-[#111A2E] border border-slate-200 dark:border-slate-700 space-y-2">
+                        {!isPro ? (
+                          <div className="space-y-2 text-xs">
+                            <p className="text-slate-600 dark:text-slate-300 text-[11px] leading-relaxed">
+                              Custom branded Telegram bot tokens are an <strong>Indie Pro</strong> (₦2,000/mo) and <strong>Team Pro</strong> (₦5,000/mo) feature. The official <strong>@SentiroAlertBot</strong> is free and ready to use above.
+                            </p>
+                            {onGoToBilling && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setIsAddModalOpen(false);
+                                  onGoToBilling();
+                                }}
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-teal-600 hover:bg-teal-500 text-white font-bold text-[11px] shadow-sm transition-all"
+                              >
+                                <Crown className="w-3.5 h-3.5" />
+                                <span>Upgrade to Pro to Unlock Custom Bots →</span>
+                              </button>
+                            )}
+                          </div>
+                        ) : (
+                          <div className="space-y-1">
+                            <label className="block text-[10px] font-mono text-slate-500 uppercase">
+                              Private Bot HTTP API Token (Pro)
+                            </label>
+                            <input
+                              type="text"
+                              value={newTgToken}
+                              onChange={(e) => setNewTgToken(e.target.value)}
+                              placeholder="e.g. 123456789:ABCdefGHIjklMNOpqrsTUVwxyz"
+                              className="w-full px-3 py-1.5 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 font-mono focus:outline-none focus:ring-2 focus:ring-teal-500"
+                            />
+                            <p className="text-[10px] text-slate-400">
+                              Obtained from @BotFather. Alerts will be dispatched using your private branded bot identity.
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
@@ -727,7 +911,7 @@ export default function AlertChannelsPage({
                       required
                       value={newEmail}
                       onChange={(e) => setNewEmail(e.target.value)}
-                      placeholder="ops@pingbud.us, sre-team@company.com"
+                      placeholder="ops@sentiro, sre-team@company.com"
                       className="w-full px-3 py-2 text-xs bg-white dark:bg-[#111A2E] border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 font-mono"
                     />
                     <p className="text-[10px] text-slate-500 mt-1">
@@ -770,7 +954,7 @@ export default function AlertChannelsPage({
                       required
                       value={newWebhookUrl}
                       onChange={(e) => setNewWebhookUrl(e.target.value)}
-                      placeholder="https://api.internal/v1/pingbud-webhook"
+                      placeholder="https://api.internal/v1/sentiro-webhook"
                       className="w-full px-3 py-2 text-xs bg-white dark:bg-[#111A2E] border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 font-mono"
                     />
                   </div>

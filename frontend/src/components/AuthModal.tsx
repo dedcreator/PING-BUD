@@ -28,6 +28,7 @@ import {
   forgotPassword,
   resetPassword,
 } from '../lib/api';
+import SentiroLogo from './SentiroLogo';
 
 const GoogleIcon = () => (
   <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
@@ -254,12 +255,10 @@ export default function AuthModal({
         {/* Header */}
         <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-teal-600/10 text-teal-600 dark:text-teal-400 flex items-center justify-center">
-              <Shield className="w-5 h-5 stroke-[2.2]" />
-            </div>
+            <SentiroLogo size="sm" showText={false} />
             <div>
               <h2 className="text-base font-bold text-slate-900 dark:text-white">
-                Team Authentication & RBAC
+                Sentiro Team Auth & RBAC
               </h2>
               <p className="text-xs text-slate-500 dark:text-slate-400">
                 Google OAuth, Granular Roles & Access Control
@@ -423,7 +422,7 @@ export default function AuthModal({
                   1-Click Seeded User Accounts
                 </span>
                 <span className="text-[10px] text-teal-600 dark:text-teal-400 font-mono">
-                  Bachs Integrated
+                  Pro Plans
                 </span>
               </div>
               <p className="text-[11px] text-slate-500 dark:text-slate-400 mb-3 leading-relaxed">
@@ -445,7 +444,7 @@ export default function AuthModal({
                         Free Starter User
                       </div>
                       <div className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">
-                        free@pingbud.us • Viewer Role
+                        free@sentiro • Viewer Role
                       </div>
                     </div>
                   </div>
@@ -469,12 +468,12 @@ export default function AuthModal({
                         <Zap className="w-3 h-3 text-teal-600 shrink-0" />
                       </div>
                       <div className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">
-                        indie@pingbud.us • Owner Role
+                        indie@sentiro • Owner Role
                       </div>
                     </div>
                   </div>
                   <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-teal-100 dark:bg-teal-900/60 text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-teal-800 font-bold">
-                    ₦2,000/mo Bachs
+                    ₦2,000/mo Pro
                   </span>
                 </div>
 
@@ -493,12 +492,12 @@ export default function AuthModal({
                         <Crown className="w-3 h-3 text-amber-500 shrink-0" />
                       </div>
                       <div className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">
-                        team@pingbud.us • Owner Role
+                        team@sentiro • Owner Role
                       </div>
                     </div>
                   </div>
                   <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 font-bold">
-                    ₦5,000/mo Bachs
+                    ₦5,000/mo Pro
                   </span>
                 </div>
               </div>
@@ -602,7 +601,7 @@ export default function AuthModal({
                 required
                 value={emailOrUsername}
                 onChange={(e) => setEmailOrUsername(e.target.value)}
-                placeholder="indie@pingbud.us"
+                placeholder="indie@sentiro"
                 className="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-[#16223B] border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-teal-500"
               />
             </div>

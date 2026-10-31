@@ -1,7 +1,45 @@
 @import "tailwindcss";
 
+@custom-variant dark (.dark &, &.dark);
+
 @layer base {
   :root {
+    --bg: #0b1120;
+    --surface: #111a2e;
+    --surface-elevated: #16223b;
+    --border: #1e293b;
+    --text: #f1f5f9;
+    --text-muted: #94a3b8;
+    --brand: #14b8a6;
+    --brand-hover: #0d9488;
+    --brand-light: rgba(20, 184, 166, 0.15);
+    --up: #10b981;
+    --up-bg: rgba(16, 185, 129, 0.15);
+    --warn: #f59e0b;
+    --warn-bg: rgba(245, 158, 11, 0.15);
+    --down: #ef4444;
+    --down-bg: rgba(239, 68, 68, 0.18);
+  }
+
+  .dark {
+    --bg: #0b1120;
+    --surface: #111a2e;
+    --surface-elevated: #16223b;
+    --border: #1e293b;
+    --text: #f1f5f9;
+    --text-muted: #94a3b8;
+    --brand: #14b8a6;
+    --brand-hover: #0d9488;
+    --brand-light: rgba(20, 184, 166, 0.15);
+    --up: #10b981;
+    --up-bg: rgba(16, 185, 129, 0.15);
+    --warn: #f59e0b;
+    --warn-bg: rgba(245, 158, 11, 0.15);
+    --down: #ef4444;
+    --down-bg: rgba(239, 68, 68, 0.18);
+  }
+
+  .light {
     --bg: #ffffff;
     --surface: #f1f5f9;
     --surface-elevated: #ffffff;
@@ -17,24 +55,6 @@
     --warn-bg: rgba(217, 119, 6, 0.12);
     --down: #dc2626;
     --down-bg: rgba(220, 38, 38, 0.12);
-  }
-
-  .dark {
-    --bg: #0b1120;
-    --surface: #111a2e;
-    --surface-elevated: #16223b;
-    --border: #1e293b;
-    --text: #e2e8f0;
-    --text-muted: #94a3b8;
-    --brand: #818cf8;
-    --brand-hover: #6366f1;
-    --brand-light: rgba(129, 140, 248, 0.15);
-    --up: #4ade80;
-    --up-bg: rgba(74, 222, 128, 0.15);
-    --warn: #fbbf24;
-    --warn-bg: rgba(251, 191, 36, 0.15);
-    --down: #f87171;
-    --down-bg: rgba(248, 113, 113, 0.18);
   }
 }
 
@@ -142,4 +162,202 @@ code, pre, .font-mono {
 
 .animate-float-3d {
   animation: float-3d 4s ease-in-out infinite;
+}
+
+/* ==========================================================================
+   HANDCRAFTED SRE TACTILE MICRO-ANIMATIONS (NON-AI PHYSICS)
+   ========================================================================== */
+
+/* Monitor Deletion & Vaporize Animation */
+@keyframes monitor-delete-disintegrate {
+  0% {
+    transform: scale(1) translateY(0);
+    filter: brightness(1);
+    opacity: 1;
+    max-height: 380px;
+  }
+  20% {
+    transform: scale(0.985) translateX(-4px);
+    filter: brightness(1.25) saturate(1.4);
+    box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.7), 0 8px 24px -4px rgba(239, 68, 68, 0.35);
+  }
+  45% {
+    transform: scale(0.94) translateX(12px) skewX(-1.5deg);
+    opacity: 0.65;
+    filter: blur(1.5px) grayscale(0.8);
+  }
+  80% {
+    transform: scale(0.88) translateX(45px);
+    opacity: 0.15;
+    filter: blur(4px);
+  }
+  100% {
+    transform: scale(0.8) translateX(60px);
+    opacity: 0;
+    max-height: 0;
+    margin-top: 0;
+    margin-bottom: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    border-width: 0;
+    pointer-events: none;
+  }
+}
+
+.animate-monitor-delete {
+  animation: monitor-delete-disintegrate 0.42s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+  will-change: transform, opacity, max-height;
+  overflow: hidden !important;
+}
+
+/* Tactile Pop for Interactive SRE Triggers */
+@keyframes tactile-pop {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(0.96);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.animate-tactile-pop {
+  animation: tactile-pop 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Sentinel Radar Breathing Pulse */
+@keyframes sentinel-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(20, 184, 166, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 7px rgba(20, 184, 166, 0);
+  }
+}
+
+.animate-sentinel-pulse {
+  animation: sentinel-pulse 2.4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Organic Status Orb Ripple */
+@keyframes orb-ripple {
+  0% {
+    transform: scale(0.95);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.15);
+    opacity: 0.2;
+  }
+  100% {
+    transform: scale(0.95);
+    opacity: 0.8;
+  }
+}
+
+.animate-orb-ripple {
+  animation: orb-ripple 3s ease-in-out infinite;
+}
+
+/* Micro Slide-Up Enter for Modals & Toasts */
+@keyframes slide-up-spring {
+  0% {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-slide-up-spring {
+  animation: slide-up-spring 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* SLA Bar Shimmer Sweep */
+@keyframes sla-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.sla-shimmer-effect {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(45, 212, 191, 0.25) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  background-size: 200% 100%;
+  animation: sla-shimmer 3s infinite linear;
+}
+
+/* Sentinel Sonar Radar Wave */
+@keyframes sonar-ping {
+  0% {
+    transform: scale(0.85);
+    opacity: 0.75;
+  }
+  50% {
+    opacity: 0.35;
+  }
+  100% {
+    transform: scale(1.85);
+    opacity: 0;
+  }
+}
+
+.animate-sonar-1 {
+  animation: sonar-ping 2s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+}
+
+.animate-sonar-2 {
+  animation: sonar-ping 2s cubic-bezier(0.16, 1, 0.3, 1) infinite 0.65s;
+}
+
+/* Oscilloscope Ping Wave Sweep */
+@keyframes osc-sweep {
+  0% {
+    stroke-dashoffset: 240;
+    opacity: 0.2;
+  }
+  35% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+  75% {
+    stroke-dashoffset: -240;
+    opacity: 0.45;
+  }
+  100% {
+    stroke-dashoffset: -240;
+    opacity: 0.2;
+  }
+}
+
+.animate-osc-sweep {
+  stroke-dasharray: 240;
+  animation: osc-sweep 2.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+/* Tactile Monitor Card Entrance */
+@keyframes monitor-card-enter {
+  0% {
+    opacity: 0;
+    transform: translateY(8px) scale(0.985);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-monitor-enter {
+  animation: monitor-card-enter 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }

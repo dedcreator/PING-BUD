@@ -14,7 +14,7 @@ def get_resend_api_key():
 
 
 def get_resend_from_email():
-    return os.environ.get("RESEND_FROM_EMAIL", "pingbud.us <onboarding@resend.dev>").strip()
+    return os.environ.get("RESEND_FROM_EMAIL", "Sentiro <onboarding@resend.dev>").strip()
 
 
 def send_email_via_resend(to, subject, html_content, text_content=None):
@@ -56,7 +56,7 @@ def send_email_via_resend(to, subject, html_content, text_content=None):
         headers={
             "Authorization": f"Bearer {api_key}",
             "Content-Type": "application/json",
-            "User-Agent": "pingbud.us-Mailer/1.0"
+            "User-Agent": "Sentiro-Mailer/1.0"
         },
         method="POST"
     )

@@ -253,11 +253,8 @@ export default function ThreeDEdgeTopology({
           <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
         </span>
         <span className="text-[10px] font-mono text-slate-500 dark:text-slate-400">
-          3D Multi-Region Quorum Topology
+          Multi-Region Quorum Topology
         </span>
-      </div>
-      <div className="absolute bottom-2 right-2 text-[9px] font-mono text-slate-400 bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm px-2 py-0.5 rounded-full pointer-events-none">
-        Drag to inspect 3D Quorum
       </div>
     </div>
   );

@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { MaintenanceWindow, Monitor, UserRole } from '../types';
 import { fetchMaintenanceWindows, createMaintenanceWindow, deleteMaintenanceWindow } from '../lib/api';
+import SentiroLogo from './SentiroLogo';
 
 interface MaintenanceModalProps {
   isOpen: boolean;
@@ -125,9 +126,7 @@ export default function MaintenanceModal({
         {/* Header */}
         <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center">
-              <Wrench className="w-5 h-5 stroke-[2.2]" />
-            </div>
+            <SentiroLogo size="sm" showText={false} />
             <div>
               <h2 className="text-base font-bold text-slate-900 dark:text-white">
                 Scheduled Maintenance Windows

@@ -38,7 +38,7 @@ export default function StandaloneMaintenancePage() {
             </div>
             <div className="flex flex-col">
               <span className="font-extrabold text-base tracking-tight text-slate-900 flex items-center gap-1.5">
-                <span>pingbud.us</span>
+                <span>sentiro</span>
                 <span className="text-[10px] font-mono uppercase px-1.5 py-0.2 rounded bg-slate-100 text-teal-700 font-bold border border-slate-200">
                   Maintenance
                 </span>

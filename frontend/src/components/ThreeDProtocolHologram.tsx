@@ -409,9 +409,6 @@ export default function ThreeDProtocolHologram({
   return (
     <div className={`relative overflow-hidden rounded-2xl select-none ${className}`}>
       <canvas ref={canvasRef} className="w-full h-full block cursor-grab active:cursor-grabbing" />
-      <div className="absolute bottom-2 right-2 text-[10px] font-mono text-slate-400 dark:text-slate-500 bg-slate-900/40 backdrop-blur-md px-2 py-0.5 rounded-full pointer-events-none">
-        3D Hologram • Drag to rotate
-      </div>
     </div>
   );
 }

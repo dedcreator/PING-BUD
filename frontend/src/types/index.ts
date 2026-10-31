@@ -269,3 +269,15 @@ export interface SlaComplianceReport {
   generated_at: string;
   attestation_id: string;
 }
+
+export interface AuditLogItem {
+  id: number;
+  timestamp: string;
+  actor: string;
+  action: string;
+  category: 'auth' | 'monitor' | 'settings' | 'security' | 'compliance' | 'billing';
+  details: string;
+  ip_address: string;
+  status: string;
+}
+

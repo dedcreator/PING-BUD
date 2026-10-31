@@ -187,9 +187,6 @@ export default function ThreeDWorkspaceCluster({
   return (
     <div className="relative h-28 w-full rounded-xl bg-slate-900/5 dark:bg-slate-950/40 border border-slate-200/80 dark:border-slate-800/80 overflow-hidden select-none mb-3">
       <canvas ref={canvasRef} className="w-full h-full block" />
-      <div className="absolute bottom-2 left-2.5 text-[9px] font-mono text-slate-400 dark:text-slate-500 pointer-events-none">
-        3D Multi-Tenant Workspace Lattice
-      </div>
     </div>
   );
 }

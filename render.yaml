@@ -22,7 +22,15 @@ services:
       - key: ALLOWED_HOSTS
         value: "*"
       - key: CSRF_TRUSTED_ORIGINS
-        value: "https://*.onrender.com"
+        value: "https://*.onrender.com,https://sentiro.xyz"
+      - key: FEEDBACK_RECEIVE_EMAIL
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: BACHS_API_KEY
+        sync: false
+      - key: BACHS_WEBHOOK_SECRET
+        sync: false
       # Optional: To connect Render's Free PostgreSQL, uncomment:
       # - key: DATABASE_URL
       #   fromDatabase:
