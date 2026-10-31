@@ -1,6 +1,20 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+
+declare global {
+  interface Window {
+    google?: {
+      accounts?: {
+        id?: {
+          initialize: (config: Record<string, unknown>) => void;
+          prompt: () => void;
+          renderButton: (element: HTMLElement, options: Record<string, unknown>) => void;
+        };
+      };
+    };
+  }
+}
 import {
   X,
   Lock,
@@ -86,6 +100,61 @@ export default function AuthModal({
 
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState<{ text: string; error: boolean } | null>(null);
+
+  const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !isOpen || !googleClientId) return;
+
+    const existingScript = document.getElementById('google-gsi-script');
+    const initGsi = () => {
+      if (window.google?.accounts?.id) {
+        window.google.accounts.id.initialize({
+          client_id: googleClientId,
+          callback: async (response: { credential?: string }) => {
+            if (!response?.credential) return;
+            try {
+              setLoading(true);
+              setMsg(null);
+              const res = await loginWithGoogle({ credential: response.credential });
+              if (res.user && res.role) {
+                onUserLoggedIn(res.user, res.role);
+                setMsg({ text: `Signed in as ${res.user.email} with Google!`, error: false });
+                setTimeout(() => onClose(), 1000);
+              }
+            } catch (err: unknown) {
+              setMsg({ text: err instanceof Error ? err.message : 'Google authentication failed', error: true });
+            } finally {
+              setLoading(false);
+            }
+          },
+        });
+
+        const btnEl = document.getElementById('google-gsi-button');
+        if (btnEl) {
+          window.google.accounts.id.renderButton(btnEl, {
+            theme: 'outline',
+            size: 'large',
+            width: 360,
+            text: 'continue_with',
+            shape: 'rectangular',
+          });
+        }
+      }
+    };
+
+    if (!existingScript) {
+      const script = document.createElement('script');
+      script.id = 'google-gsi-script';
+      script.src = 'https://accounts.google.com/gsi/client';
+      script.async = true;
+      script.defer = true;
+      script.onload = initGsi;
+      document.body.appendChild(script);
+    } else {
+      initGsi();
+    }
+  }, [isOpen, tab, googleClientId]);
 
   if (!isOpen) return null;
 
@@ -354,27 +423,51 @@ export default function AuthModal({
         {/* GOOGLE SIGN IN BAR (VISIBLE FOR SIGN IN & SIGN UP) */}
         {(tab === 'login' || tab === 'register') && (
           <div className="space-y-3 mb-4">
-            <button
-              type="button"
-              onClick={() => handleGoogleLogin()}
-              disabled={loading}
-              className="w-full py-2.5 px-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#16223B] hover:bg-slate-50 dark:hover:bg-[#1E2D4A] text-slate-800 dark:text-slate-100 text-xs font-semibold shadow-sm transition-all flex items-center justify-center gap-2.5 cursor-pointer"
-            >
-              <GoogleIcon />
-              <span>Continue with Google</span>
-              {loading && <Loader2 className="w-3.5 h-3.5 animate-spin ml-1 text-teal-600" />}
-            </button>
+            {googleClientId ? (
+              <div className="space-y-2">
+                <div id="google-gsi-button" className="flex justify-center w-full min-h-[44px]" />
+                <div className="flex items-center justify-between px-1">
+                  <button
+                    type="button"
+                    onClick={() => handleGoogleLogin()}
+                    className="text-[11px] text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
+                  >
+                    Use 1-click dev Google sign-in instead
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowGoogleCustomInput(!showGoogleCustomInput)}
+                    className="text-[11px] text-teal-600 dark:text-teal-400 hover:underline flex items-center gap-1"
+                  >
+                    <span>{showGoogleCustomInput ? 'Hide manual email' : 'Manual Gmail'}</span>
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  onClick={() => handleGoogleLogin()}
+                  disabled={loading}
+                  className="w-full py-2.5 px-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#16223B] hover:bg-slate-50 dark:hover:bg-[#1E2D4A] text-slate-800 dark:text-slate-100 text-xs font-semibold shadow-sm transition-all flex items-center justify-center gap-2.5 cursor-pointer"
+                >
+                  <GoogleIcon />
+                  <span>Continue with Google</span>
+                  {loading && <Loader2 className="w-3.5 h-3.5 animate-spin ml-1 text-teal-600" />}
+                </button>
 
-            {/* Optional Custom Google Email toggle */}
-            <div className="flex items-center justify-between px-1">
-              <button
-                type="button"
-                onClick={() => setShowGoogleCustomInput(!showGoogleCustomInput)}
-                className="text-[11px] text-teal-600 dark:text-teal-400 hover:underline flex items-center gap-1"
-              >
-                <span>{showGoogleCustomInput ? 'Hide Google email input' : 'Sign in with a specific Google email'}</span>
-              </button>
-            </div>
+                {/* Optional Custom Google Email toggle */}
+                <div className="flex items-center justify-between px-1">
+                  <button
+                    type="button"
+                    onClick={() => setShowGoogleCustomInput(!showGoogleCustomInput)}
+                    className="text-[11px] text-teal-600 dark:text-teal-400 hover:underline flex items-center gap-1"
+                  >
+                    <span>{showGoogleCustomInput ? 'Hide Google email input' : 'Sign in with a specific Google email'}</span>
+                  </button>
+                </div>
+              </>
+            )}
 
             {showGoogleCustomInput && (
               <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-2">

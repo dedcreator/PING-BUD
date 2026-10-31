@@ -165,6 +165,7 @@ export async function loginWithGoogle(payload: {
   name?: string;
   credential?: string;
   google_id?: string;
+  totp_code?: string;
 }): Promise<{
   token: string;
   user: User;
@@ -172,6 +173,7 @@ export async function loginWithGoogle(payload: {
   can_edit: boolean;
   is_owner: boolean;
   message: string;
+  requires_2fa?: boolean;
 }> {
   const res = await fetch(`${API_BASE}/api/auth/google/`, {
     method: 'POST',
@@ -183,7 +185,7 @@ export async function loginWithGoogle(payload: {
     throw new Error(err.error || 'Google authentication failed');
   }
   const data = await res.json();
-  if (typeof window !== 'undefined') {
+  if (data.token && typeof window !== 'undefined') {
     localStorage.setItem('pulsewatch_token', data.token);
     setClientDemoRole(data.role || 'owner');
   }

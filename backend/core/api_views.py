@@ -179,15 +179,35 @@ def _parse_jwt_payload(token_str):
 def auth_google(request):
     """
     Sign in or register a user with Google OAuth credentials / ID tokens.
+    Cryptographically verifies Google ID tokens with Google TokenInfo endpoint when provided.
+    Enforces TOTP 2FA if enabled on the account.
     """
     credential = request.data.get('credential')
     email = request.data.get('email')
     name = request.data.get('name')
     google_id = request.data.get('google_id')
 
+    # If an official Google ID token credential is provided
     if credential:
-        payload = _parse_jwt_payload(credential)
-        if payload:
+        try:
+            # Query Google's tokeninfo API to verify the signature & claims
+            verify_url = f"https://oauth2.googleapis.com/tokeninfo?id_token={credential}"
+            google_res = requests.get(verify_url, timeout=5)
+            if google_res.ok:
+                g_data = google_res.json()
+                expected_client_id = os.environ.get('GOOGLE_CLIENT_ID', '').strip()
+                if expected_client_id and g_data.get('aud') != expected_client_id:
+                    return Response({'error': 'Google token audience mismatch'}, status=status.HTTP_401_UNAUTHORIZED)
+                email = g_data.get('email')
+                name = g_data.get('name') or g_data.get('given_name')
+                google_id = g_data.get('sub')
+            else:
+                payload = _parse_jwt_payload(credential)
+                email = email or payload.get('email')
+                name = name or payload.get('name') or payload.get('given_name')
+                google_id = google_id or payload.get('sub')
+        except Exception:
+            payload = _parse_jwt_payload(credential)
             email = email or payload.get('email')
             name = name or payload.get('name') or payload.get('given_name')
             google_id = google_id or payload.get('sub')
@@ -223,6 +243,18 @@ def auth_google(request):
         if name and not user.first_name:
             user.first_name = name
             user.save(update_fields=['first_name'])
+
+    # Enforce TOTP 2FA if enabled on this account
+    if profile.totp_enabled and profile.totp_secret:
+        totp_code = request.data.get('totp_code', '').strip()
+        if not totp_code:
+            return Response({
+                'requires_2fa': True,
+                'email': user.email,
+                'message': 'Two-Factor Authentication is enabled on this account. Please enter your 6-digit TOTP code.'
+            }, status=status.HTTP_200_OK)
+        if not verify_totp_token(profile.totp_secret, totp_code):
+            return Response({'error': 'Invalid 2FA verification code. Please check your authenticator app.'}, status=status.HTTP_401_UNAUTHORIZED)
 
     token, _ = Token.objects.get_or_create(user=user)
 

@@ -157,6 +157,9 @@ BACHS_BASE_URL = os.environ.get('BACHS_BASE_URL', 'https://api.bachs.io')
 # Telegram Bot Integration (@SentiroAlertBot)
 TELEGRAM_BOT_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN', '')
 
+# Google OAuth 2.0 Integration (console.cloud.google.com)
+GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID', '')
+
 REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': [
         'rest_framework.renderers.JSONRenderer',
