@@ -15,4 +15,4 @@ python manage.py migrate
 echo "==> Seeding demo monitors, users, and invoices..."
 python manage.py seed_demo_data
 
-echo "==> PulseWatch backend build successfully completed!"
+echo "==> Sentiro backend build successfully completed!"
