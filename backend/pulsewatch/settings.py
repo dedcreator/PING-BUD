@@ -159,6 +159,7 @@ TELEGRAM_BOT_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN', '')
 
 # Google OAuth 2.0 Integration (console.cloud.google.com)
 GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID', '')
+GOOGLE_CLIENT_SECRET = os.environ.get('GOOGLE_CLIENT_SECRET', '')
 
 REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': [
