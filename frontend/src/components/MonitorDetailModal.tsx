@@ -111,7 +111,8 @@ export default function MonitorDetailModal({
   };
 
   const copyHeartbeatCurl = () => {
-    const curl = `curl -s "http://127.0.0.1:8000/hb/${monitor.heartbeat_token}/"`;
+    const apiBase = getApiBase();
+    const curl = `curl -s "${apiBase}/hb/${monitor.heartbeat_token}/"`;
     navigator.clipboard.writeText(curl);
     setCopiedHb(true);
     setTimeout(() => setCopiedHb(false), 2000);
@@ -268,7 +269,7 @@ export default function MonitorDetailModal({
               </button>
             </div>
             <pre className="p-2.5 rounded-lg bg-slate-900 text-slate-200 text-xs font-mono overflow-x-auto">
-              curl -s "http://127.0.0.1:8000/hb/{monitor.heartbeat_token}/"
+              curl -s &quot;{getApiBase()}/hb/{monitor.heartbeat_token}/&quot;
             </pre>
             <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-2">
               Add this curl at the end of your scheduled job or bash script. If sentiro does not receive a ping within {monitor.interval_seconds}s, an incident alert is triggered immediately.

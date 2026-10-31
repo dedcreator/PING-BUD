@@ -18,22 +18,50 @@ import {
 } from '../types';
 
 export function getApiBase(): string {
-  if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL;
+  // 1. Explicit environment variable set at build or run time
+  const envUrl = process.env.NEXT_PUBLIC_API_URL?.trim();
+  if (envUrl) {
+    return envUrl.replace(/\/$/, '');
+  }
+
+  // 2. Client-side browser runtime autodetection
   if (typeof window !== 'undefined') {
-    if (window.location.port === '3000') {
-      return `http://${window.location.hostname || '127.0.0.1'}:8000`;
+    const host = window.location.hostname || '';
+    const port = window.location.port;
+
+    // Local development (e.g. Next.js on port 3000 -> Django on port 8000)
+    if (port === '3000') {
+      return `http://${host || '127.0.0.1'}:8000`;
     }
+
+    // Production custom domain (sentiro.xyz / www.sentiro.xyz -> api.sentiro.xyz)
+    if (host === 'sentiro.xyz' || host === 'www.sentiro.xyz' || host.endsWith('.sentiro.xyz')) {
+      return 'https://api.sentiro.xyz';
+    }
+
+    // Pxxl.app / Pxxl.pro deployments (sentiro-web.pxxl.pro -> sentiro-api.pxxl.pro)
+    if (host.includes('pxxl')) {
+      const parts = host.split('.');
+      if (parts[0].endsWith('-web')) {
+        parts[0] = parts[0].replace(/-web$/, '-api');
+        return `${window.location.protocol}//${parts.join('.')}`;
+      }
+    }
+
+    // Same-origin fallback
     return '';
   }
+
+  // 3. Server-side rendering default
   return 'http://127.0.0.1:8000';
 }
 
-const API_BASE =
-  typeof window !== 'undefined'
-    ? (window.location.port === '3000'
-        ? `http://${window.location.hostname || '127.0.0.1'}:8000`
-        : (process.env.NEXT_PUBLIC_API_URL || ''))
-    : (process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000');
+// Dynamically resolves at the exact moment of each fetch request
+const API_BASE = {
+  toString() {
+    return getApiBase();
+  },
+};
 
 // Global demo role header state for testing RBAC live in UI
 let currentDemoRole: UserRole = 'owner';

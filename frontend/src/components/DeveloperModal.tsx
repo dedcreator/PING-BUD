@@ -16,7 +16,7 @@ import {
   ShieldAlert,
 } from 'lucide-react';
 import { ApiKey, UserRole } from '../types';
-import { fetchApiKeys, createApiKey, deleteApiKey } from '../lib/api';
+import { fetchApiKeys, createApiKey, deleteApiKey, getApiBase } from '../lib/api';
 import SentiroLogo from './SentiroLogo';
 
 interface DeveloperModalProps {
@@ -92,8 +92,9 @@ export default function DeveloperModal({
     setTimeout(() => setter(false), 2000);
   };
 
-  const sampleCurl = `curl -H "Authorization: Token ${newSecretKey || 'pw_live_demo_token'}" http://127.0.0.1:8000/api/overview/`;
-  const badgeMarkdown = `![Uptime](http://127.0.0.1:8000/badge/${firstMonitorId}.svg)`;
+  const apiBase = getApiBase();
+  const sampleCurl = `curl -H "Authorization: Token ${newSecretKey || 'pw_live_demo_token'}" ${apiBase}/api/overview/`;
+  const badgeMarkdown = `![Uptime](${apiBase}/badge/${firstMonitorId}.svg)`;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/65 backdrop-blur-sm overflow-y-auto">
@@ -243,7 +244,7 @@ export default function DeveloperModal({
               <span>Prometheus & Grafana Scraper</span>
             </h3>
             <a
-              href="http://127.0.0.1:8000/metrics"
+              href={`${apiBase}/metrics`}
               target="_blank"
               rel="noreferrer"
               className="inline-flex items-center gap-1 text-[11px] font-mono text-indigo-600 dark:text-indigo-400 hover:underline"
@@ -255,10 +256,10 @@ export default function DeveloperModal({
 
           <div className="relative">
             <pre className="p-3 rounded-xl bg-slate-900 text-slate-200 text-xs font-mono overflow-x-auto">
-              curl -s http://127.0.0.1:8000/metrics
+              curl -s {apiBase}/metrics
             </pre>
             <button
-              onClick={() => copyText('curl -s http://127.0.0.1:8000/metrics', setCopiedCurl)}
+              onClick={() => copyText(`curl -s ${apiBase}/metrics`, setCopiedCurl)}
               className="absolute right-2.5 top-2.5 p-1 rounded bg-slate-800 text-slate-300 hover:text-white"
             >
               {copiedCurl ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
